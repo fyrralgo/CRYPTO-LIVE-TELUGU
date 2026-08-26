@@ -1,30 +1,25 @@
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEdwpWQbmhF4QC65S_1njA45XAEUhUONFWDyyyRUkruWFehkRNSSHV_o0ODI2gABKu/exec';
+
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
 let currentVideoIndex = 0;
 let countdownInterval;
 
-// Original video array preserved
 const videos = [
     { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
     { title: "2. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?si=WjwQn36jQI8scn3Z", isLocked: false, duration: "45:10" },
     { title: "3. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/JgV8ayiVs6s?si=WjwQn36jQI8scn3Z", isLocked: true, duration: "32:05" },
-    { title: "3. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://youtu.be/33gUzpo_-sc?si=gWoENjj3bvj50zar", isLocked: true, duration: "32:05" },
-    { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://youtu.be/33gUzpo_-sc?si=gWoENjj3bvj50zar", isLocked: true, duration: "55:40" },
-    { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://youtu.be/33gUzpo_-sc?si=gWoENjj3bvj50zar", isLocked: true, duration: "55:40" },
-    { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://youtu.be/33gUzpo_-sc?si=gWoENjj3bvj50zar", isLocked: true, duration: "55:40" },
-    { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://youtu.be/33gUzpo_-sc?si=gWoENjj3bvj50zar", isLocked: true, duration: "55:40" },
     { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://youtu.be/33gUzpo_-sc?si=gWoENjj3bvj50zar", isLocked: true, duration: "55:40" }
 ];
 
 async function init() {
     if (currentUser) {
-        // Universally check backend to see if user became premium on another device
         try {
-            const res = await fetch(`api.php?action=check_status&email=${encodeURIComponent(currentUser.email)}`);
+            const res = await fetch(`${SCRIPT_URL}?action=check_status&email=${encodeURIComponent(currentUser.email)}`);
             const data = await res.json();
             isPremiumUser = data.isPremium;
         } catch (err) {
-            console.error("Auth check failed", err);
+            console.error("Status check failed", err);
         }
     }
     
@@ -78,13 +73,13 @@ async function handleRegister(e) {
     const password = document.getElementById('reg-pass').value;
     const errorEl = document.getElementById('auth-error');
 
-    const formData = new FormData();
+    const formData = new URLSearchParams();
     formData.append('name', name);
     formData.append('email', email);
     formData.append('password', password);
 
     try {
-        const response = await fetch('api.php?action=register', { method: 'POST', body: formData });
+        const response = await fetch(`${SCRIPT_URL}?action=register`, { method: 'POST', body: formData });
         const data = await response.json();
 
         if (!data.success) {
@@ -101,7 +96,7 @@ async function handleRegister(e) {
         updateUIState();
         loadVideo(currentVideoIndex);
     } catch (err) {
-        errorEl.innerText = "Server error. Please try again.";
+        errorEl.innerText = "Connection error. Please try again.";
         errorEl.classList.remove('hidden');
     }
 }
@@ -112,12 +107,12 @@ async function handleLogin(e) {
     const password = document.getElementById('login-pass').value;
     const errorEl = document.getElementById('auth-error');
 
-    const formData = new FormData();
+    const formData = new URLSearchParams();
     formData.append('email', email);
     formData.append('password', password);
 
     try {
-        const response = await fetch('api.php?action=login', { method: 'POST', body: formData });
+        const response = await fetch(`${SCRIPT_URL}?action=login`, { method: 'POST', body: formData });
         const data = await response.json();
 
         if (data.success) {
@@ -133,7 +128,7 @@ async function handleLogin(e) {
             errorEl.classList.remove('hidden');
         }
     } catch (err) {
-        errorEl.innerText = "Server error. Please try again.";
+        errorEl.innerText = "Connection error. Please try again.";
         errorEl.classList.remove('hidden');
     }
 }
@@ -156,12 +151,12 @@ async function submitUTR() {
 
     if (!currentUser) return;
 
-    const formData = new FormData();
+    const formData = new URLSearchParams();
     formData.append('email', currentUser.email);
     formData.append('utr', utrInput);
 
     try {
-        const response = await fetch('api.php?action=submit_utr', { method: 'POST', body: formData });
+        const response = await fetch(`${SCRIPT_URL}?action=submit_utr`, { method: 'POST', body: formData });
         const data = await response.json();
 
         if (data.success) {
@@ -186,7 +181,6 @@ async function submitUTR() {
     }
 }
 
-// UI Rendering Functions remain unchanged from original logic
 function renderPlaylist() {
     const playlistEl = document.getElementById('playlist');
     playlistEl.innerHTML = '';
