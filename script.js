@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxBKWSj0dv2qpVygRsXfMVqtu3gvt8-FNc9Wp3JVPXa--O52BARzUTcYiw7DsamqVaA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6AodjjvUnvz6OLJ5PiIKA1wP03s_-khfCXwlRB25f7v2bBlr3BuLYVJIIZdMUXlVu/exec';
 
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
@@ -47,92 +47,55 @@ function checkAuthStatus() {
 function switchAuthTab(mode) {
     const loginForm = document.getElementById('login-form');
     const regForm = document.getElementById('register-form');
-    const otpForm = document.getElementById('otp-form');
-    const forgotForm = document.getElementById('forgot-password-form');
-    const authTabs = document.getElementById('auth-tabs');
+    const forgotForm = document.getElementById('forgot-form');
     const tabLogin = document.getElementById('tab-login');
     const tabReg = document.getElementById('tab-register');
     const errorEl = document.getElementById('auth-error');
+    const successEl = document.getElementById('auth-success');
     
     errorEl.classList.add('hidden');
-    errorEl.className = "text-red-400 text-xs text-center mt-4 hidden"; // reset color
-    authTabs.classList.remove('hidden');
-    otpForm.classList.add('hidden');
-    forgotForm.classList.add('hidden');
+    successEl.classList.add('hidden');
 
     if (mode === 'login') {
         loginForm.classList.remove('hidden');
         regForm.classList.add('hidden');
+        forgotForm.classList.add('hidden');
         tabLogin.className = "flex-1 pb-3 text-center font-bold text-blue-400 border-b-2 border-blue-400";
         tabReg.className = "flex-1 pb-3 text-center font-bold text-slate-400";
-    } else {
+    } else if (mode === 'register') {
         regForm.classList.remove('hidden');
         loginForm.classList.add('hidden');
+        forgotForm.classList.add('hidden');
         tabReg.className = "flex-1 pb-3 text-center font-bold text-emerald-400 border-b-2 border-emerald-400";
         tabLogin.className = "flex-1 pb-3 text-center font-bold text-slate-400";
+    } else if (mode === 'forgot') {
+        forgotForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+        regForm.classList.add('hidden');
+        tabLogin.className = "flex-1 pb-3 text-center font-bold text-slate-400";
+        tabReg.className = "flex-1 pb-3 text-center font-bold text-slate-400";
     }
 }
 
-// ---------------- NEW: FORGOT PASSWORD ----------------
-function showForgotPassword() {
-    document.getElementById('login-form').classList.add('hidden');
-    document.getElementById('register-form').classList.add('hidden');
-    document.getElementById('auth-tabs').classList.add('hidden');
-    document.getElementById('forgot-password-form').classList.remove('hidden');
-    document.getElementById('auth-error').classList.add('hidden');
-}
-
-async function handleForgotPassword(e) {
-    e.preventDefault();
-    const email = document.getElementById('forgot-email').value.trim().toLowerCase();
-    const errorEl = document.getElementById('auth-error');
-    const btn = e.target.querySelector('button[type="submit"]');
-
-    btn.innerText = "Sending...";
-    btn.disabled = true;
-
-    const formData = new URLSearchParams();
-    formData.append('action', 'forgot_password');
-    formData.append('email', email);
-
-    try {
-        const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
-        const data = await response.json();
-
-        if (data.success) {
-            errorEl.innerText = "Password sent to your email successfully!";
-            errorEl.className = "text-emerald-400 text-xs text-center mt-4";
-            errorEl.classList.remove('hidden');
-            setTimeout(() => switchAuthTab('login'), 3000);
-        } else {
-            errorEl.innerText = data.message || "Email not found.";
-            errorEl.className = "text-red-400 text-xs text-center mt-4";
-            errorEl.classList.remove('hidden');
-        }
-    } catch (err) {
-        errorEl.innerText = "Connection error. Please try again.";
-        errorEl.classList.remove('hidden');
-    } finally {
-        btn.innerText = "Send Password";
-        btn.disabled = false;
-    }
-}
-
-// ---------------- NEW: REGISTRATION + OTP LOGIC ----------------
-async function handleRegister(e) {
-    e.preventDefault();
+async function requestOTP() {
     const name = document.getElementById('reg-name').value.trim();
-    const mobile = document.getElementById('reg-mobile').value.trim();
     const email = document.getElementById('reg-email').value.trim().toLowerCase();
     const password = document.getElementById('reg-pass').value;
     const errorEl = document.getElementById('auth-error');
-    const btn = document.getElementById('reg-btn');
+    const successEl = document.getElementById('auth-success');
+    const sendOtpBtn = document.getElementById('send-otp-btn');
 
-    // Temporarily store the data for when OTP is verified
-    window.tempRegData = { name, mobile, email, password };
+    errorEl.classList.add('hidden');
+    successEl.classList.add('hidden');
 
-    btn.innerText = "Sending OTP...";
-    btn.disabled = true;
+    if (!name || !email || !password) {
+        errorEl.innerText = "Please fill in all fields first.";
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    sendOtpBtn.innerText = "Sending OTP...";
+    sendOtpBtn.disabled = true;
 
     const formData = new URLSearchParams();
     formData.append('action', 'send_otp');
@@ -145,43 +108,50 @@ async function handleRegister(e) {
         if (!data.success) {
             errorEl.innerText = data.message;
             errorEl.classList.remove('hidden');
-            btn.innerText = "Send OTP via Email";
-            btn.disabled = false;
+            sendOtpBtn.innerText = "Send Verification OTP";
+            sendOtpBtn.disabled = false;
             return;
         }
 
-        // OTP sent successfully, switch to OTP form
-        document.getElementById('register-form').classList.add('hidden');
-        document.getElementById('auth-tabs').classList.add('hidden');
-        document.getElementById('otp-form').classList.remove('hidden');
-        errorEl.classList.add('hidden');
+        successEl.innerText = data.message;
+        successEl.classList.remove('hidden');
         
+        document.getElementById('otp-container').classList.remove('hidden');
+        document.getElementById('verify-reg-btn').classList.remove('hidden');
+        sendOtpBtn.innerText = "Resend OTP";
+        sendOtpBtn.disabled = false;
+
     } catch (err) {
-        errorEl.innerText = "Connection error. Please try again.";
+        errorEl.innerText = "Connection error while requesting OTP.";
         errorEl.classList.remove('hidden');
-    } finally {
-        btn.innerText = "Send OTP via Email";
-        btn.disabled = false;
+        sendOtpBtn.innerText = "Send Verification OTP";
+        sendOtpBtn.disabled = false;
     }
 }
 
-async function verifyOTPAndRegister(e) {
+async function handleRegister(e) {
     e.preventDefault();
+    const name = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim().toLowerCase();
+    const password = document.getElementById('reg-pass').value;
     const otp = document.getElementById('reg-otp').value.trim();
     const errorEl = document.getElementById('auth-error');
-    const btn = e.target.querySelector('button[type="submit"]');
+    const successEl = document.getElementById('auth-success');
 
-    if (!window.tempRegData) return;
+    errorEl.classList.add('hidden');
+    successEl.classList.add('hidden');
 
-    btn.innerText = "Verifying...";
-    btn.disabled = true;
+    if (!otp) {
+        errorEl.innerText = "Please enter the OTP sent to your email.";
+        errorEl.classList.remove('hidden');
+        return;
+    }
 
     const formData = new URLSearchParams();
-    formData.append('action', 'verify_otp_and_register');
-    formData.append('name', window.tempRegData.name);
-    formData.append('mobile', window.tempRegData.mobile);
-    formData.append('email', window.tempRegData.email);
-    formData.append('password', window.tempRegData.password);
+    formData.append('action', 'register');
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('password', password);
     formData.append('otp', otp);
 
     try {
@@ -189,11 +159,8 @@ async function verifyOTPAndRegister(e) {
         const data = await response.json();
 
         if (!data.success) {
-            errorEl.innerText = data.message || "Invalid OTP";
-            errorEl.className = "text-red-400 text-xs text-center mt-4";
+            errorEl.innerText = data.message;
             errorEl.classList.remove('hidden');
-            btn.innerText = "Verify & Create Account";
-            btn.disabled = false;
             return;
         }
 
@@ -207,17 +174,18 @@ async function verifyOTPAndRegister(e) {
     } catch (err) {
         errorEl.innerText = "Connection error. Please try again.";
         errorEl.classList.remove('hidden');
-        btn.innerText = "Verify & Create Account";
-        btn.disabled = false;
     }
 }
 
-// ---------------- REST OF THE SCRIPT (Unchanged) ----------------
 async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value.trim().toLowerCase();
     const password = document.getElementById('login-pass').value;
     const errorEl = document.getElementById('auth-error');
+    const successEl = document.getElementById('auth-success');
+
+    errorEl.classList.add('hidden');
+    successEl.classList.add('hidden');
 
     const formData = new URLSearchParams();
     formData.append('action', 'login');
@@ -236,6 +204,36 @@ async function handleLogin(e) {
             checkAuthStatus();
             updateUIState();
             loadVideo(currentVideoIndex);
+        } else {
+            errorEl.innerText = data.message;
+            errorEl.classList.remove('hidden');
+        }
+    } catch (err) {
+        errorEl.innerText = "Connection error. Please try again.";
+        errorEl.classList.remove('hidden');
+    }
+}
+
+async function handleForgotPassword(e) {
+    e.preventDefault();
+    const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+    const errorEl = document.getElementById('auth-error');
+    const successEl = document.getElementById('auth-success');
+
+    errorEl.classList.add('hidden');
+    successEl.classList.add('hidden');
+
+    const formData = new URLSearchParams();
+    formData.append('action', 'forgot_password');
+    formData.append('email', email);
+
+    try {
+        const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
+        const data = await response.json();
+
+        if (data.success) {
+            successEl.innerText = data.message;
+            successEl.classList.remove('hidden');
         } else {
             errorEl.innerText = data.message;
             errorEl.classList.remove('hidden');
