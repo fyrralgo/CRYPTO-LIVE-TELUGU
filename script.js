@@ -1,10 +1,7 @@
-let isPremiumUser = localStorage.getItem('hasPaidCourse') === 'true';
+let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
+let isPremiumUser = checkPremiumStatus();
 let currentVideoIndex = 0;
 let countdownInterval;
-
-// Authentication Storage
-let usersDB = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 
 const videos = [
     { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
@@ -25,7 +22,12 @@ function init() {
     loadVideo(0);
 }
 
-// Authentication Logic
+function checkPremiumStatus() {
+    if (!currentUser) return false;
+    // Check if user exists in the utr.js paid database
+    return window.paidUsersDB.some(u => u.email === currentUser.email);
+}
+
 function checkAuthStatus() {
     const authModal = document.getElementById('auth-modal');
     const userDisplay = document.getElementById('user-display');
@@ -70,21 +72,28 @@ function handleRegister(e) {
     const password = document.getElementById('reg-pass').value;
     const errorEl = document.getElementById('auth-error');
 
-    const existingUser = usersDB.find(u => u.email === email);
-    if (existingUser) {
-        errorEl.innerText = "Email is already registered! Please login.";
+    // Check if user exists in hidden.js or utr.js
+    const existsInUnpaid = window.registeredUsersDB.some(u => u.email === email);
+    const existsInPaid = window.paidUsersDB.some(u => u.email === email);
+
+    if (existsInUnpaid || existsInPaid) {
+        errorEl.innerText = "Email is already registered! Please switch to Login.";
         errorEl.classList.remove('hidden');
         return;
     }
 
+    // Add to hidden.js DB
     const newUser = { id: Date.now(), name, email, password };
-    usersDB.push(newUser);
-    localStorage.setItem('registeredUsers', JSON.stringify(usersDB));
+    window.registeredUsersDB.push(newUser);
+    localStorage.setItem('registeredUsersDB', JSON.stringify(window.registeredUsersDB));
     
     currentUser = { name: newUser.name, email: newUser.email };
     localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
     
+    isPremiumUser = false;
     checkAuthStatus();
+    updateUIState();
+    loadVideo(currentVideoIndex);
 }
 
 function handleLogin(e) {
@@ -93,22 +102,87 @@ function handleLogin(e) {
     const password = document.getElementById('login-pass').value;
     const errorEl = document.getElementById('auth-error');
 
-    const user = usersDB.find(u => u.email === email && u.password === password);
-    if (!user) {
-        errorEl.innerText = "Invalid email or password.";
-        errorEl.classList.remove('hidden');
+    // 1. Check paid users (utr.js)
+    const paidUser = window.paidUsersDB.find(u => u.email === email && u.password === password);
+    if (paidUser) {
+        currentUser = { name: paidUser.name, email: paidUser.email };
+        localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+        isPremiumUser = true;
+        checkAuthStatus();
+        updateUIState();
+        loadVideo(currentVideoIndex);
         return;
     }
 
-    currentUser = { name: user.name, email: user.email };
-    localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
-    checkAuthStatus();
+    // 2. Check unpaid users (hidden.js)
+    const unpaidUser = window.registeredUsersDB.find(u => u.email === email && u.password === password);
+    if (unpaidUser) {
+        currentUser = { name: unpaidUser.name, email: unpaidUser.email };
+        localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+        isPremiumUser = false;
+        checkAuthStatus();
+        updateUIState();
+        loadVideo(currentVideoIndex);
+        return;
+    }
+
+    errorEl.innerText = "Invalid email or password.";
+    errorEl.classList.remove('hidden');
 }
 
 function logout() {
     localStorage.removeItem('loggedInUser');
     currentUser = null;
     location.reload();
+}
+
+function submitUTR() {
+    const utrInput = document.getElementById('utr-input').value.trim();
+    const errorMsg = document.getElementById('utr-error');
+    
+    if (utrInput.length < 8) {
+        errorMsg.classList.remove('hidden');
+        return;
+    }
+
+    errorMsg.classList.add('hidden');
+    
+    // Transfer user from hidden.js (unpaid) to utr.js (paid)
+    if (currentUser) {
+        const userIndex = window.registeredUsersDB.findIndex(u => u.email === currentUser.email);
+        let userRecord;
+
+        if (userIndex !== -1) {
+            userRecord = window.registeredUsersDB.splice(userIndex, 1)[0];
+        } else {
+            userRecord = { name: currentUser.name, email: currentUser.email, password: "N/A" };
+        }
+
+        userRecord.utr = utrInput;
+        userRecord.paidAt = new Date().toISOString();
+
+        window.paidUsersDB.push(userRecord);
+
+        // Update storage
+        localStorage.setItem('registeredUsersDB', JSON.stringify(window.registeredUsersDB));
+        localStorage.setItem('paidUsersDB', JSON.stringify(window.paidUsersDB));
+    }
+
+    isPremiumUser = true;
+    
+    document.getElementById('utr-modal-content').innerHTML = `
+        <div class="text-center py-6">
+            <i class="fa-solid fa-circle-check text-6xl text-emerald-500 mb-4 animate-bounce"></i>
+            <h2 class="text-2xl font-bold text-white mb-2">Payment Verified!</h2>
+            <p class="text-slate-400 mb-6">కోర్సు అన్‌లాక్ చేయబడింది. User moved to UTR Paid Registry!</p>
+        </div>
+    `;
+
+    setTimeout(() => {
+        closeModal();
+        updateUIState();
+        loadVideo(currentVideoIndex);
+    }, 2500);
 }
 
 function renderPlaylist() {
@@ -216,39 +290,14 @@ function closeModal() {
     }, 300); 
 }
 
-function submitUTR() {
-    const utrInput = document.getElementById('utr-input').value.trim();
-    const errorMsg = document.getElementById('utr-error');
-    
-    if (utrInput.length < 8) {
-        errorMsg.classList.remove('hidden');
-        return;
-    }
-
-    errorMsg.classList.add('hidden');
-    localStorage.setItem('hasPaidCourse', 'true');
-    isPremiumUser = true;
-    
-    document.getElementById('utr-modal-content').innerHTML = `
-        <div class="text-center py-6">
-            <i class="fa-solid fa-circle-check text-6xl text-emerald-500 mb-4 animate-bounce"></i>
-            <h2 class="text-2xl font-bold text-white mb-2">Payment Verified!</h2>
-            <p class="text-slate-400 mb-6">కోర్సు అన్‌లాక్ చేయబడింది. Happy Learning!</p>
-        </div>
-    `;
-
-    setTimeout(() => {
-        closeModal();
-        updateUIState();
-        loadVideo(currentVideoIndex);
-    }, 2500);
-}
-
 function updateUIState() {
     const badge = document.getElementById('status-badge');
     if (isPremiumUser) {
         badge.className = "px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 text-xs md:text-sm font-semibold";
         badge.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> Premium Access';
+    } else {
+        badge.className = "px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/50 text-xs md:text-sm font-semibold";
+        badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Locked';
     }
 }
 
