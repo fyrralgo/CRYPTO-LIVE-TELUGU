@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEdwpWQbmhF4QC65S_1njA45XAEUhUONFWDyyyRUkruWFehkRNSSHV_o0ODI2gABKu/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwGG-g81PU5czBazvaWGfjdlMfmX6QD3up5TEjwX_L6Jvxcd_0vFtxkTP_sZjsWOEU/exec';
 
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
@@ -74,12 +74,13 @@ async function handleRegister(e) {
     const errorEl = document.getElementById('auth-error');
 
     const formData = new URLSearchParams();
+    formData.append('action', 'register');
     formData.append('name', name);
     formData.append('email', email);
     formData.append('password', password);
 
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=register`, { method: 'POST', body: formData });
+        const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
         const data = await response.json();
 
         if (!data.success) {
@@ -108,11 +109,12 @@ async function handleLogin(e) {
     const errorEl = document.getElementById('auth-error');
 
     const formData = new URLSearchParams();
+    formData.append('action', 'login');
     formData.append('email', email);
     formData.append('password', password);
 
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=login`, { method: 'POST', body: formData });
+        const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
         const data = await response.json();
 
         if (data.success) {
@@ -152,11 +154,12 @@ async function submitUTR() {
     if (!currentUser) return;
 
     const formData = new URLSearchParams();
+    formData.append('action', 'submit_utr');
     formData.append('email', currentUser.email);
     formData.append('utr', utrInput);
 
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=submit_utr`, { method: 'POST', body: formData });
+        const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
         const data = await response.json();
 
         if (data.success) {
