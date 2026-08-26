@@ -1,9 +1,10 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCg_XA9lM63mJu1JFARrUhay5lzpfQb50e8FHbcuNw2KDBb-845VA5qAFk_5IUL7C4/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsu7-12DacUBKizZhzYms2yFjs-OGoNIP8YMFMpXxeOJ7nsmR3wQWzhrQtZaMLsnXl/exec';
 
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
 let currentVideoIndex = 0;
 let countdownInterval;
+let cartBillingData = null;
 
 const videos = [
     { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
@@ -144,10 +145,8 @@ async function handleRegister(e) {
     const password = document.getElementById('reg-pass').value;
     const otp = document.getElementById('reg-otp').value.trim();
     const errorEl = document.getElementById('auth-error');
-    const successEl = document.getElementById('auth-success');
 
     errorEl.classList.add('hidden');
-    successEl.classList.add('hidden');
 
     if (!otp) {
         errorEl.innerText = "Please enter the OTP sent to your email.";
@@ -173,7 +172,7 @@ async function handleRegister(e) {
             return;
         }
 
-        currentUser = { name: data.name, email: data.email };
+        currentUser = { name: data.name, email: data.email, mobile: mobile };
         localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
         isPremiumUser = false;
         
@@ -191,10 +190,8 @@ async function handleLogin(e) {
     const email = document.getElementById('login-email').value.trim().toLowerCase();
     const password = document.getElementById('login-pass').value;
     const errorEl = document.getElementById('auth-error');
-    const successEl = document.getElementById('auth-success');
 
     errorEl.classList.add('hidden');
-    successEl.classList.add('hidden');
 
     const formData = new URLSearchParams();
     formData.append('action', 'login');
@@ -206,7 +203,7 @@ async function handleLogin(e) {
         const data = await response.json();
 
         if (data.success) {
-            currentUser = { name: data.name, email: data.email };
+            currentUser = { name: data.name, email: data.email, mobile: data.mobile || '' };
             localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
             isPremiumUser = data.isPremium;
             
@@ -253,10 +250,62 @@ async function handleForgotPassword(e) {
     }
 }
 
-function logout() {
-    localStorage.removeItem('loggedInUser');
-    currentUser = null;
-    location.reload();
+function openCartModal() {
+    const cartModal = document.getElementById('cart-modal');
+    if (currentUser) {
+        document.getElementById('cart-name').value = currentUser.name || '';
+        document.getElementById('cart-email').value = currentUser.email || '';
+        if (currentUser.mobile) document.getElementById('cart-mobile').value = currentUser.mobile;
+    }
+    cartModal.classList.remove('hidden');
+}
+
+function closeCartModal() {
+    document.getElementById('cart-modal').classList.add('hidden');
+}
+
+function handleCartSubmit(e) {
+    e.preventDefault();
+
+    cartBillingData = {
+        name: document.getElementById('cart-name').value.trim(),
+        mobile: document.getElementById('cart-mobile').value.trim(),
+        email: document.getElementById('cart-email').value.trim().toLowerCase(),
+        address: document.getElementById('cart-address').value.trim(),
+        state: document.getElementById('cart-state').value.trim(),
+        country: document.getElementById('cart-country').value,
+        pincode: document.getElementById('cart-pincode').value.trim()
+    };
+
+    closeCartModal();
+    initiatePayment();
+}
+
+function initiatePayment() {
+    const btn = document.getElementById('pay-btn');
+    const qrBtn = document.getElementById('qr-paid-btn'); 
+    const msg = document.getElementById('countdown-msg');
+    const timerEl = document.getElementById('timer');
+    
+    btn.classList.add('opacity-50', 'pointer-events-none');
+    if (qrBtn) qrBtn.classList.add('opacity-50', 'pointer-events-none'); 
+    msg.classList.remove('hidden');
+    
+    let timeLeft = 60; 
+    timerEl.innerText = timeLeft;
+
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+        timeLeft--;
+        timerEl.innerText = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+            showUtrModal();
+            resetPaymentUI();
+        }
+    }, 1000);
+
+    window.open('upi://pay?pa=9959246246@ybl&pn=ShaikRaheem&cu=INR&am=20000', '_blank');
 }
 
 async function submitUTR() {
@@ -269,12 +318,22 @@ async function submitUTR() {
     }
     errorMsg.classList.add('hidden');
 
-    if (!currentUser) return;
+    const activeEmail = cartBillingData ? cartBillingData.email : (currentUser ? currentUser.email : '');
+    if (!activeEmail) return;
 
     const formData = new URLSearchParams();
     formData.append('action', 'submit_utr');
-    formData.append('email', currentUser.email);
+    formData.append('email', activeEmail);
     formData.append('utr', utrInput);
+
+    if (cartBillingData) {
+        formData.append('name', cartBillingData.name);
+        formData.append('mobile', cartBillingData.mobile);
+        formData.append('address', cartBillingData.address);
+        formData.append('state', cartBillingData.state);
+        formData.append('country', cartBillingData.country);
+        formData.append('pincode', cartBillingData.pincode);
+    }
 
     try {
         const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
@@ -287,7 +346,10 @@ async function submitUTR() {
                 <div class="text-center py-6">
                     <i class="fa-solid fa-circle-check text-6xl text-emerald-500 mb-4 animate-bounce"></i>
                     <h2 class="text-2xl font-bold text-white mb-2">Payment Verified!</h2>
-                    <p class="text-slate-400 mb-6">కోర్సు అన్‌లాక్ చేయబడింది. Content Unlocked!</p>
+                    <p class="text-slate-400 mb-4">కోర్సు అన్‌లాక్ చేయబడింది. Content Unlocked!</p>
+                    <p class="text-xs text-emerald-400 bg-emerald-500/10 p-2 rounded border border-emerald-500/30">
+                        <i class="fa-solid fa-envelope mr-1"></i> Invoice PDF has been sent to your Gmail ID.
+                    </p>
                 </div>
             `;
 
@@ -295,7 +357,7 @@ async function submitUTR() {
                 closeModal();
                 updateUIState();
                 loadVideo(currentVideoIndex);
-            }, 2500);
+            }, 3000);
         }
     } catch (err) {
         console.error("UTR submission failed", err);
@@ -352,31 +414,6 @@ function loadVideo(index) {
     }
 }
 
-function initiatePayment() {
-    const btn = document.getElementById('pay-btn');
-    const qrBtn = document.getElementById('qr-paid-btn'); 
-    const msg = document.getElementById('countdown-msg');
-    const timerEl = document.getElementById('timer');
-    
-    btn.classList.add('opacity-50', 'pointer-events-none');
-    if (qrBtn) qrBtn.classList.add('opacity-50', 'pointer-events-none'); 
-    msg.classList.remove('hidden');
-    
-    let timeLeft = 60; 
-    timerEl.innerText = timeLeft;
-
-    clearInterval(countdownInterval);
-    countdownInterval = setInterval(() => {
-        timeLeft--;
-        timerEl.innerText = timeLeft;
-        if (timeLeft <= 0) {
-            clearInterval(countdownInterval);
-            showUtrModal();
-            resetPaymentUI();
-        }
-    }, 1000);
-}
-
 function resetPaymentUI() {
     clearInterval(countdownInterval);
     document.getElementById('pay-btn').classList.remove('opacity-50', 'pointer-events-none');
@@ -416,6 +453,12 @@ function updateUIState() {
         badge.className = "px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/50 text-xs md:text-sm font-semibold";
         badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Locked';
     }
+}
+
+function logout() {
+    localStorage.removeItem('loggedInUser');
+    currentUser = null;
+    location.reload();
 }
 
 window.onload = init;
