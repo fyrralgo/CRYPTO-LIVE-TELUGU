@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto & Forex Mastery | Telugu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-panel { background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(10px); }
+        .whatsapp-float { position: fixed; bottom: 20px; right: 20px; z-index: 100; transition: transform 0.3s; }
+        .whatsapp-float:hover { transform: scale(1.1); }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden bg-slate-900">
+
+    <!-- Top Navigation -->
+    <nav class="glass-panel p-3 md:p-4 flex justify-between items-center shadow-lg z-20 border-b border-slate-700">
+        <div class="text-xl md:text-2xl font-bold text-blue-400 flex items-center gap-2">
+            <i class="fa-brands fa-bitcoin"></i> <span class="hidden md:inline">Crypto & Forex Mastery</span><span class="md:hidden">Trading Course</span>
+        </div>
+        <div id="status-badge" class="px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/50 text-xs md:text-sm font-semibold">
+            <i class="fa-solid fa-lock mr-1"></i> Locked
+        </div>
+    </nav>
+
+    <!-- Main Layout (Stacks on mobile, Side-by-side on desktop) -->
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+        
+        <!-- Video Player Area (Left) -->
+        <div class="flex-1 overflow-y-auto flex flex-col p-0 md:p-6 pb-20 md:pb-6">
+            
+            <!-- Video Container -->
+            <div id="video-container" class="w-full aspect-video bg-black md:rounded-xl overflow-hidden shadow-2xl relative border-b md:border border-slate-700 z-10 sticky top-0 md:static">
+                
+                <!-- Video iframe -->
+                <iframe id="video-frame" class="w-full h-full hidden" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                
+                <!-- Locked Overlay -->
+                <div id="locked-overlay" class="absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center p-4 md:p-6 text-center hidden">
+                    <i class="fa-solid fa-lock text-4xl md:text-6xl text-slate-500 mb-3 md:mb-4"></i>
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-2">Premium Content Locked</h2>
+                    <p class="text-sm md:text-base text-slate-400 mb-6 max-w-md hidden md:block">
+                        ఈ వీడియో చూడటానికి కోర్సును కొనుగోలు చేయండి (₹20,000). Payment బటన్ క్లిక్ చేసిన 1 నిమిషం తర్వాత UTR విండో ఓపెన్ అవుతుంది.
+                    </p>
+                    
+                    <!-- Payment Section -->
+                    <div class="bg-slate-800 p-4 md:p-6 rounded-xl border border-slate-700 w-full max-w-sm mx-auto">
+                        
+                        <!-- Premium QR Code iframe -->
+                        <div class="mb-5 flex flex-col items-center bg-white p-2 rounded-lg shadow-inner">
+                            <p class="text-sm text-slate-800 mb-2 font-bold text-center">Scan QR for Premium Classes</p>
+                            <iframe src="https://drive.google.com/file/d/1QbY0ZhFejkeL--sRaUjK6nXgwrT9uSLs/preview" width="200" height="200" class="rounded border border-slate-200" frameborder="0" allow="autoplay"></iframe>
+                        </div>
+
+                        <!-- Note: target="_blank" ensures the UPI app opens properly -->
+                        <a id="pay-btn" href="upi://pay?pa=9959246246@ybl&pn=ShaikRaheem&cu=INR&am=20000" target="_blank" onclick="initiatePayment()"
+                           class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition text-center shadow-lg shadow-blue-500/30">
+                            <i class="fa-solid fa-qrcode mr-2"></i> Pay ₹20,000 via UPI
+                        </a>
+                        
+                        <!-- NEW: Paid with QR Button -->
+                        <button id="qr-paid-btn" onclick="initiatePayment()"
+                           class="block w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition text-center shadow-lg shadow-emerald-500/30">
+                            <i class="fa-solid fa-check-circle mr-2"></i> Paid with QR
+                        </button>
+                        
+                        <!-- Countdown Message (Hidden initially) -->
+                        <div id="countdown-msg" class="mt-4 text-sm font-semibold text-yellow-400 hidden bg-yellow-400/10 p-3 rounded-lg border border-yellow-400/20">
+                            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Waiting for payment... <br>
+                            <span class="text-white mt-1 block">UTR విండో <span id="timer" class="text-yellow-400 font-bold text-lg">60</span> సెకన్లలో ఓపెన్ అవుతుంది.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Details -->
+            <div class="p-4 md:p-0 md:mt-6">
+                <h1 id="video-title" class="text-xl md:text-2xl font-bold text-white mb-2">Loading...</h1>
+                <p id="video-desc" class="text-sm md:text-base text-slate-400">Please wait while course loads.</p>
+            </div>
+        </div>
+
+        <!-- Playlist Sidebar (Right) -->
+        <div class="w-full md:w-80 lg:w-96 bg-slate-800/80 md:glass-panel border-t md:border-t-0 md:border-l border-slate-700 flex flex-col h-auto md:h-full z-0">
+            <div class="p-4 border-b border-slate-700 bg-slate-900/50 sticky top-0">
+                <h3 class="font-bold text-lg"><i class="fa-solid fa-list-ul mr-2"></i> Course Playlist</h3>
+                <p class="text-xs text-slate-400 mt-1">4 Modules • Telugu</p>
+            </div>
+            
+            <div id="playlist" class="flex-1 overflow-y-auto p-2 scrollbar-hide pb-24 md:pb-2">
+                <!-- JavaScript will populate the playlist here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- UTR Submission Modal (Popup) -->
+    <div id="utr-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-800 p-6 md:p-8 rounded-2xl border border-slate-600 w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300" id="utr-modal-content">
+            
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/50">
+                    <i class="fa-solid fa-file-invoice-dollar text-3xl text-blue-400"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">Submit UTR Number</h2>
+                <p class="text-sm text-slate-400">పేమెంట్ పూర్తయిన తర్వాత మీ UPI యాప్‌లో ఉన్న 12 అంకెల UTR / Reference నంబర్‌ను ఇక్కడ ఎంటర్ చేయండి.</p>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">12-Digit Reference Number</label>
+                    <input type="text" id="utr-input" placeholder="e.g., 312345678901" maxlength="12" class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none text-white text-center font-mono tracking-widest text-lg">
+                </div>
+                
+                <button onclick="submitUTR()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition shadow-lg shadow-emerald-500/30">
+                    Verify & Unlock Course
+                </button>
+                <p id="utr-error" class="text-red-400 text-sm text-center hidden">Please enter a valid 12-digit UTR number.</p>
+            </div>
+            
+            <button onclick="closeModal()" class="w-full mt-4 text-slate-400 hover:text-white text-sm transition">
+                Cancel / Try Again Later
+            </button>
+        </div>
+    </div>
+
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/919959246246?text=Hello%20Shaik%20Raheem,%20I%20have%20a%20doubt%20regarding%20the%20course." 
+       target="_blank" 
+       class="whatsapp-float bg-green-500 text-white w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-2xl md:text-3xl shadow-xl shadow-green-500/30">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <!-- JavaScript Logic -->
+    <script>
+        let isPremiumUser = localStorage.getItem('hasPaidCourse') === 'true';
+        let currentVideoIndex = 0;
+        let countdownInterval;
+
+        // Course Content Data
+        const videos = [
+            {
+                title: "1. Introduction to Crypto & Forex (Basics)",
+                desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ", 
+                isLocked: false,
+                duration: "15:20"
+            },
+            {
+                title: "2. Technical Analysis & Chart Patterns",
+                desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.",
+                url: "https://www.youtube.com/embed/tgbNymZ7vqY",
+                isLocked: true,
+                duration: "45:10"
+            },
+            {
+                title: "3. Risk Management & Psychology",
+                desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?",
+                url: "https://www.youtube.com/embed/kJQP7kiw5Fk", 
+                isLocked: true,
+                duration: "32:05"
+            },
+            {
+                title: "4. Live Trading Setup & Strategies",
+                desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.",
+                url: "https://www.youtube.com/embed/9bZkp7q19f0", 
+                isLocked: true,
+                duration: "55:40"
+            }
+        ];
+
+        function init() {
+            updateUIState();
+            renderPlaylist();
+            loadVideo(0);
+        }
+
+        function renderPlaylist() {
+            const playlistEl = document.getElementById('playlist');
+            playlistEl.innerHTML = '';
+
+            videos.forEach((video, index) => {
+                const isActive = index === currentVideoIndex;
+                const showLock = video.isLocked && !isPremiumUser;
+                
+                const item = document.createElement('div');
+                item.className = `p-2 md:p-3 mb-2 rounded-lg cursor-pointer transition flex items-start gap-3 
+                    ${isActive ? 'bg-blue-600/20 border border-blue-500/50' : 'hover:bg-slate-700/50 border border-transparent'}`;
+                
+                item.onclick = () => loadVideo(index);
+
+                item.innerHTML = `
+                    <div class="relative w-20 h-14 md:w-24 md:h-16 bg-slate-900 rounded flex-shrink-0 overflow-hidden flex items-center justify-center border border-slate-700">
+                        <i class="fa-solid fa-play text-slate-600 text-lg md:text-xl"></i>
+                        ${showLock ? '<div class="absolute inset-0 bg-slate-900/80 flex items-center justify-center"><i class="fa-solid fa-lock text-slate-400"></i></div>' : ''}
+                        <span class="absolute bottom-1 right-1 bg-black/80 text-[10px] md:text-xs px-1 rounded text-white">${video.duration}</span>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-xs md:text-sm font-semibold text-white line-clamp-2 ${isActive ? 'text-blue-400' : ''}">${video.title}</h4>
+                        <p class="text-[10px] md:text-xs text-slate-400 mt-1">${showLock ? 'Premium Only' : 'Free Preview'}</p>
+                    </div>
+                `;
+                playlistEl.appendChild(item);
+            });
+        }
+
+        function loadVideo(index) {
+            currentVideoIndex = index;
+            const video = videos[index];
+            
+            document.getElementById('video-title').innerText = video.title;
+            document.getElementById('video-desc').innerText = video.desc;
+
+            const iframe = document.getElementById('video-frame');
+            const overlay = document.getElementById('locked-overlay');
+
+            // Reset payment UI if they switch videos
+            resetPaymentUI(); 
+
+            if (video.isLocked && !isPremiumUser) {
+                iframe.classList.add('hidden');
+                iframe.src = ""; 
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+                iframe.classList.remove('hidden');
+                if(iframe.src !== video.url) {
+                    iframe.src = video.url;
+                }
+            }
+
+            renderPlaylist();
+            
+            // On mobile, scroll to top when a video is clicked
+            if (window.innerWidth < 768) {
+                document.querySelector('.flex-1.overflow-y-auto').scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // --- 1-Minute Payment Logic ---
+        function initiatePayment() {
+            const btn = document.getElementById('pay-btn');
+            const qrBtn = document.getElementById('qr-paid-btn'); // Added for new button
+            const msg = document.getElementById('countdown-msg');
+            const timerEl = document.getElementById('timer');
+            
+            // Style the buttons to look active/disabled
+            btn.classList.add('opacity-50', 'pointer-events-none');
+            if (qrBtn) qrBtn.classList.add('opacity-50', 'pointer-events-none'); // Added for new button
+            msg.classList.remove('hidden');
+            
+            let timeLeft = 60; // 60 seconds
+            timerEl.innerText = timeLeft;
+
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    showUtrModal();
+                    resetPaymentUI();
+                }
+            }, 1000);
+        }
+
+        function resetPaymentUI() {
+            clearInterval(countdownInterval);
+            document.getElementById('pay-btn').classList.remove('opacity-50', 'pointer-events-none');
+            const qrBtn = document.getElementById('qr-paid-btn'); // Added for new button
+            if (qrBtn) qrBtn.classList.remove('opacity-50', 'pointer-events-none'); // Added for new button
+            document.getElementById('countdown-msg').classList.add('hidden');
+        }
+
+        // --- UTR Modal Functions ---
+        function showUtrModal() {
+            const modal = document.getElementById('utr-modal');
+            const content = document.getElementById('utr-modal-content');
+            
+            modal.classList.remove('hidden');
+            // Small delay to allow CSS transition to work
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('utr-modal');
+            const content = document.getElementById('utr-modal-content');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.getElementById('utr-input').value = '';
+                document.getElementById('utr-error').classList.add('hidden');
+            }, 300); // Matches the duration-300 class
+        }
+
+        function submitUTR() {
+            const utrInput = document.getElementById('utr-input').value.trim();
+            const errorMsg = document.getElementById('utr-error');
+            
+            // Simple validation: Ensure it's not empty and has roughly 12 chars (standard UPI Ref format)
+            if (utrInput.length < 8) {
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            // Success
+            errorMsg.classList.add('hidden');
+            localStorage.setItem('hasPaidCourse', 'true');
+            isPremiumUser = true;
+            
+            // Show Success inside Modal
+            document.getElementById('utr-modal-content').innerHTML = `
+                <div class="text-center py-6">
+                    <i class="fa-solid fa-circle-check text-6xl text-emerald-500 mb-4 animate-bounce"></i>
+                    <h2 class="text-2xl font-bold text-white mb-2">Payment Verified!</h2>
+                    <p class="text-slate-400 mb-6">కోర్సు అన్‌లాక్ చేయబడింది. Happy Learning!</p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                closeModal();
+                updateUIState();
+                loadVideo(currentVideoIndex);
+            }, 2500);
+        }
+
+        function updateUIState() {
+            const badge = document.getElementById('status-badge');
+            if (isPremiumUser) {
+                badge.className = "px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 text-xs md:text-sm font-semibold";
+                badge.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> Premium Access';
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
