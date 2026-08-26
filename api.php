@@ -1,119 +1,93 @@
 <?php
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
 $action = $_GET['action'] ?? '';
-$data = json_decode(file_get_contents('php://input'), true);
+$userDataFile = 'userdata.txt';
+$utrDataFile = 'UTR.txt';
 
-// 1. Register User -> Store in userdata.txt
+// Helper function to check if a user is premium based on UTR.txt
+function isPremium($email, $utrDataFile) {
+    if (!file_exists($utrDataFile)) return false;
+    $lines = file($utrDataFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $parts = explode('|', $line);
+        if (trim($parts[0]) === $email) {
+            return true;
+        }
+    }
+    return false;
+}
+
 if ($action === 'register') {
-    if (!empty($data['email']) && !empty($data['password'])) {
-        $email = strtolower(trim($data['email']));
-        
-        // Check if user already exists
-        $exists = false;
-        if (file_exists('userdata.txt')) {
-            $lines = file('userdata.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            foreach ($lines as $line) {
-                $parts = explode('|', $line);
-                if (count($parts) >= 2 && $parts[1] === $email) {
-                    $exists = true;
-                    break;
-                }
+    $name = trim($_POST['name'] ?? '');
+    $email = strtolower(trim($_POST['email'] ?? ''));
+    $password = $_POST['password'] ?? '';
+
+    // Check if user already exists
+    if (file_exists($userDataFile)) {
+        $lines = file($userDataFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $parts = explode('|', $line);
+            if (trim($parts[0]) === $email) {
+                echo json_encode(['success' => false, 'message' => 'Email is already registered!']);
+                exit;
             }
         }
-        
-        if ($exists) {
-            echo json_encode(['success' => false, 'message' => 'Email already registered.']);
-            exit;
-        }
-
-        $entry = trim($data['name']) . "|" . $email . "|" . trim($data['password']) . "|" . date('Y-m-d H:i:s') . "\n";
-        file_put_contents('userdata.txt', $entry, FILE_APPEND | LOCK_EX);
-        echo json_encode(['success' => true, 'message' => 'Registration successful.']);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Invalid data.']);
     }
+
+    // Save new user: email|password|name
+    $userData = "$email|$password|$name\n";
+    file_put_contents($userDataFile, $userData, FILE_APPEND | LOCK_EX);
+    
+    echo json_encode(['success' => true, 'name' => $name, 'email' => $email]);
     exit;
 }
 
-// 2. Login -> Check UTR.txt (Paid) then userdata.txt (Registered)
 if ($action === 'login') {
-    if (!empty($data['email']) && !empty($data['password'])) {
-        $email = strtolower(trim($data['email']));
-        $password = trim($data['password']);
-        
-        $isPaid = false;
-        $isRegistered = false;
-        $userName = "";
+    $email = strtolower(trim($_POST['email'] ?? ''));
+    $password = $_POST['password'] ?? '';
 
-        // Check if Paid User (UTR.txt)
-        if (file_exists('UTR.txt')) {
-            $lines = file('UTR.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            foreach ($lines as $line) {
-                $parts = explode('|', $line);
-                if (count($parts) >= 3 && $parts[1] === $email && $parts[2] === $password) {
-                    $isPaid = true;
-                    $isRegistered = true;
-                    $userName = $parts[0];
-                    break;
-                }
+    if (file_exists($userDataFile)) {
+        $lines = file($userDataFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $parts = explode('|', $line);
+            if (trim($parts[0]) === $email && trim($parts[1]) === $password) {
+                $name = trim($parts[2]);
+                $premium = isPremium($email, $utrDataFile);
+                echo json_encode(['success' => true, 'name' => $name, 'email' => $email, 'isPremium' => $premium]);
+                exit;
             }
         }
-
-        // Check if Normal User (userdata.txt)
-        if (!$isRegistered && file_exists('userdata.txt')) {
-            $lines = file('userdata.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            foreach ($lines as $line) {
-                $parts = explode('|', $line);
-                if (count($parts) >= 3 && $parts[1] === $email && $parts[2] === $password) {
-                    $isRegistered = true;
-                    $userName = $parts[0];
-                    break;
-                }
-            }
-        }
-
-        if ($isRegistered) {
-            echo json_encode([
-                'success' => true, 
-                'user' => ['name' => $userName, 'email' => $email],
-                'isPaid' => $isPaid
-            ]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Invalid Email or Password.']);
-        }
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Missing credentials.']);
     }
+    echo json_encode(['success' => false, 'message' => 'Invalid email or password.']);
     exit;
 }
 
-// 3. Submit UTR -> Store in UTR.txt
 if ($action === 'submit_utr') {
-    if (!empty($data['email']) && !empty($data['utr'])) {
-        // Fetch password from userdata.txt to keep records consistent
-        $password = "unknown";
-        $name = "User";
-        if (file_exists('userdata.txt')) {
-            $lines = file('userdata.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            foreach ($lines as $line) {
-                $parts = explode('|', $line);
-                if (count($parts) >= 3 && $parts[1] === strtolower(trim($data['email']))) {
-                    $name = $parts[0];
-                    $password = $parts[2];
-                    break;
-                }
-            }
-        }
+    $email = strtolower(trim($_POST['email'] ?? ''));
+    $utr = trim($_POST['utr'] ?? '');
 
-        $entry = $name . "|" . strtolower(trim($data['email'])) . "|" . $password . "|" . trim($data['utr']) . "|" . date('Y-m-d H:i:s') . "\n";
-        file_put_contents('UTR.txt', $entry, FILE_APPEND | LOCK_EX);
-        echo json_encode(['success' => true, 'message' => 'Payment verified.']);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Invalid UTR data.']);
+    if (empty($email) || empty($utr)) {
+        echo json_encode(['success' => false, 'message' => 'Missing data.']);
+        exit;
     }
+
+    // Save UTR data: email|utr
+    $utrData = "$email|$utr\n";
+    file_put_contents($utrDataFile, $utrData, FILE_APPEND | LOCK_EX);
+
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+if ($action === 'check_status') {
+    $email = strtolower(trim($_GET['email'] ?? ''));
+    if (empty($email)) {
+        echo json_encode(['isPremium' => false]);
+        exit;
+    }
+    $premium = isPremium($email, $utrDataFile);
+    echo json_encode(['isPremium' => $premium]);
     exit;
 }
 ?>
