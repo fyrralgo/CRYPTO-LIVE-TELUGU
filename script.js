@@ -24,7 +24,6 @@ function init() {
 
 function checkPremiumStatus() {
     if (!currentUser) return false;
-    // Check if user exists in the utr.js paid database
     return window.paidUsersDB.some(u => u.email === currentUser.email);
 }
 
@@ -72,7 +71,6 @@ function handleRegister(e) {
     const password = document.getElementById('reg-pass').value;
     const errorEl = document.getElementById('auth-error');
 
-    // Check if user exists in hidden.js or utr.js
     const existsInUnpaid = window.registeredUsersDB.some(u => u.email === email);
     const existsInPaid = window.paidUsersDB.some(u => u.email === email);
 
@@ -82,7 +80,6 @@ function handleRegister(e) {
         return;
     }
 
-    // Add to hidden.js DB
     const newUser = { id: Date.now(), name, email, password };
     window.registeredUsersDB.push(newUser);
     localStorage.setItem('registeredUsersDB', JSON.stringify(window.registeredUsersDB));
@@ -102,7 +99,6 @@ function handleLogin(e) {
     const password = document.getElementById('login-pass').value;
     const errorEl = document.getElementById('auth-error');
 
-    // 1. Check paid users (utr.js)
     const paidUser = window.paidUsersDB.find(u => u.email === email && u.password === password);
     if (paidUser) {
         currentUser = { name: paidUser.name, email: paidUser.email };
@@ -114,7 +110,6 @@ function handleLogin(e) {
         return;
     }
 
-    // 2. Check unpaid users (hidden.js)
     const unpaidUser = window.registeredUsersDB.find(u => u.email === email && u.password === password);
     if (unpaidUser) {
         currentUser = { name: unpaidUser.name, email: unpaidUser.email };
@@ -147,7 +142,6 @@ function submitUTR() {
 
     errorMsg.classList.add('hidden');
     
-    // Transfer user from hidden.js (unpaid) to utr.js (paid)
     if (currentUser) {
         const userIndex = window.registeredUsersDB.findIndex(u => u.email === currentUser.email);
         let userRecord;
@@ -163,7 +157,6 @@ function submitUTR() {
 
         window.paidUsersDB.push(userRecord);
 
-        // Update storage
         localStorage.setItem('registeredUsersDB', JSON.stringify(window.registeredUsersDB));
         localStorage.setItem('paidUsersDB', JSON.stringify(window.paidUsersDB));
     }
@@ -230,8 +223,9 @@ function loadVideo(index) {
         }
     }
     renderPlaylist();
+    
     if (window.innerWidth < 768) {
-        document.querySelector('.flex-1.overflow-y-auto').scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 
