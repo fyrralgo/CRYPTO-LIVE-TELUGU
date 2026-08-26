@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDhwfAjgwojJgl-t7BBEIchmqde2eCFIQ_oyQzDGKCPFYsPAJmps7C77kZ65yKBwpI/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvIhXzEV7yZUfkIlxDzHFYpJVSu6MTlk_-DD53u5XbPTDQkQVX-bGgFCrW0z2WcnJu/exec';
 
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
@@ -6,12 +6,6 @@ let currentVideoIndex = 0;
 let countdownInterval;
 
 const videos = [
-    { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-    { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-    { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-    { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-    { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-    { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
     { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
     { title: "2. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?si=WjwQn36jQI8scn3Z", isLocked: false, duration: "45:10" },
     { title: "3. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/JgV8ayiVs6s?si=WjwQn36jQI8scn3Z", isLocked: true, duration: "32:05" },
@@ -53,52 +47,91 @@ function checkAuthStatus() {
 function switchAuthTab(mode) {
     const loginForm = document.getElementById('login-form');
     const regForm = document.getElementById('register-form');
-    const forgotForm = document.getElementById('forgot-form');
+    const otpForm = document.getElementById('otp-form');
+    const forgotForm = document.getElementById('forgot-password-form');
+    const authTabs = document.getElementById('auth-tabs');
     const tabLogin = document.getElementById('tab-login');
     const tabReg = document.getElementById('tab-register');
-    const authTabs = document.getElementById('auth-tabs');
     const errorEl = document.getElementById('auth-error');
-    const successEl = document.getElementById('auth-success');
     
     errorEl.classList.add('hidden');
-    successEl.classList.add('hidden');
+    errorEl.className = "text-red-400 text-xs text-center mt-4 hidden"; // reset color
     authTabs.classList.remove('hidden');
+    otpForm.classList.add('hidden');
+    forgotForm.classList.add('hidden');
 
     if (mode === 'login') {
         loginForm.classList.remove('hidden');
         regForm.classList.add('hidden');
-        forgotForm.classList.add('hidden');
         tabLogin.className = "flex-1 pb-3 text-center font-bold text-blue-400 border-b-2 border-blue-400";
         tabReg.className = "flex-1 pb-3 text-center font-bold text-slate-400";
-    } else if (mode === 'register') {
+    } else {
         regForm.classList.remove('hidden');
         loginForm.classList.add('hidden');
-        forgotForm.classList.add('hidden');
         tabReg.className = "flex-1 pb-3 text-center font-bold text-emerald-400 border-b-2 border-emerald-400";
         tabLogin.className = "flex-1 pb-3 text-center font-bold text-slate-400";
-    } else if (mode === 'forgot') {
-        authTabs.classList.add('hidden');
-        loginForm.classList.add('hidden');
-        regForm.classList.add('hidden');
-        forgotForm.classList.remove('hidden');
     }
 }
 
-async function sendOTP() {
-    const email = document.getElementById('reg-email').value.trim().toLowerCase();
-    const btn = document.getElementById('send-otp-btn');
+// ---------------- NEW: FORGOT PASSWORD ----------------
+function showForgotPassword() {
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('register-form').classList.add('hidden');
+    document.getElementById('auth-tabs').classList.add('hidden');
+    document.getElementById('forgot-password-form').classList.remove('hidden');
+    document.getElementById('auth-error').classList.add('hidden');
+}
+
+async function handleForgotPassword(e) {
+    e.preventDefault();
+    const email = document.getElementById('forgot-email').value.trim().toLowerCase();
     const errorEl = document.getElementById('auth-error');
-    const successEl = document.getElementById('auth-success');
+    const btn = e.target.querySelector('button[type="submit"]');
 
-    if (!email) {
-        errorEl.innerText = "Please enter a valid Email ID first.";
-        errorEl.classList.remove('hidden');
-        return;
-    }
-
-    errorEl.classList.add('hidden');
-    successEl.classList.add('hidden');
     btn.innerText = "Sending...";
+    btn.disabled = true;
+
+    const formData = new URLSearchParams();
+    formData.append('action', 'forgot_password');
+    formData.append('email', email);
+
+    try {
+        const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
+        const data = await response.json();
+
+        if (data.success) {
+            errorEl.innerText = "Password sent to your email successfully!";
+            errorEl.className = "text-emerald-400 text-xs text-center mt-4";
+            errorEl.classList.remove('hidden');
+            setTimeout(() => switchAuthTab('login'), 3000);
+        } else {
+            errorEl.innerText = data.message || "Email not found.";
+            errorEl.className = "text-red-400 text-xs text-center mt-4";
+            errorEl.classList.remove('hidden');
+        }
+    } catch (err) {
+        errorEl.innerText = "Connection error. Please try again.";
+        errorEl.classList.remove('hidden');
+    } finally {
+        btn.innerText = "Send Password";
+        btn.disabled = false;
+    }
+}
+
+// ---------------- NEW: REGISTRATION + OTP LOGIC ----------------
+async function handleRegister(e) {
+    e.preventDefault();
+    const name = document.getElementById('reg-name').value.trim();
+    const mobile = document.getElementById('reg-mobile').value.trim();
+    const email = document.getElementById('reg-email').value.trim().toLowerCase();
+    const password = document.getElementById('reg-pass').value;
+    const errorEl = document.getElementById('auth-error');
+    const btn = document.getElementById('reg-btn');
+
+    // Temporarily store the data for when OTP is verified
+    window.tempRegData = { name, mobile, email, password };
+
+    btn.innerText = "Sending OTP...";
     btn.disabled = true;
 
     const formData = new URLSearchParams();
@@ -109,50 +142,46 @@ async function sendOTP() {
         const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
         const data = await response.json();
 
-        if (data.success) {
-            document.getElementById('otp-container').classList.remove('hidden');
-            document.getElementById('reg-submit-btn').classList.remove('hidden');
-            document.getElementById('reg-email').readOnly = true;
-            btn.innerText = "Resend OTP";
-            btn.disabled = false;
-            successEl.innerText = "OTP sent successfully to your email ID!";
-            successEl.classList.remove('hidden');
-        } else {
+        if (!data.success) {
             errorEl.innerText = data.message;
             errorEl.classList.remove('hidden');
-            btn.innerText = "Send OTP";
+            btn.innerText = "Send OTP via Email";
             btn.disabled = false;
+            return;
         }
+
+        // OTP sent successfully, switch to OTP form
+        document.getElementById('register-form').classList.add('hidden');
+        document.getElementById('auth-tabs').classList.add('hidden');
+        document.getElementById('otp-form').classList.remove('hidden');
+        errorEl.classList.add('hidden');
+        
     } catch (err) {
-        errorEl.innerText = "Failed to send OTP. Please check connection.";
+        errorEl.innerText = "Connection error. Please try again.";
         errorEl.classList.remove('hidden');
-        btn.innerText = "Send OTP";
+    } finally {
+        btn.innerText = "Send OTP via Email";
         btn.disabled = false;
     }
 }
 
-async function handleRegister(e) {
+async function verifyOTPAndRegister(e) {
     e.preventDefault();
-    const name = document.getElementById('reg-name').value.trim();
-    const mobile = document.getElementById('reg-mobile').value.trim();
-    const email = document.getElementById('reg-email').value.trim().toLowerCase();
-    const password = document.getElementById('reg-pass').value;
     const otp = document.getElementById('reg-otp').value.trim();
     const errorEl = document.getElementById('auth-error');
-    const successEl = document.getElementById('auth-success');
+    const btn = e.target.querySelector('button[type="submit"]');
 
-    if (!otp) {
-        errorEl.innerText = "Please enter the OTP sent to your mail.";
-        errorEl.classList.remove('hidden');
-        return;
-    }
+    if (!window.tempRegData) return;
+
+    btn.innerText = "Verifying...";
+    btn.disabled = true;
 
     const formData = new URLSearchParams();
-    formData.append('action', 'register');
-    formData.append('name', name);
-    formData.append('mobile', mobile);
-    formData.append('email', email);
-    formData.append('password', password);
+    formData.append('action', 'verify_otp_and_register');
+    formData.append('name', window.tempRegData.name);
+    formData.append('mobile', window.tempRegData.mobile);
+    formData.append('email', window.tempRegData.email);
+    formData.append('password', window.tempRegData.password);
     formData.append('otp', otp);
 
     try {
@@ -160,8 +189,11 @@ async function handleRegister(e) {
         const data = await response.json();
 
         if (!data.success) {
-            errorEl.innerText = data.message;
+            errorEl.innerText = data.message || "Invalid OTP";
+            errorEl.className = "text-red-400 text-xs text-center mt-4";
             errorEl.classList.remove('hidden');
+            btn.innerText = "Verify & Create Account";
+            btn.disabled = false;
             return;
         }
 
@@ -175,45 +207,12 @@ async function handleRegister(e) {
     } catch (err) {
         errorEl.innerText = "Connection error. Please try again.";
         errorEl.classList.remove('hidden');
-    }
-}
-
-async function handleForgotPassword(e) {
-    e.preventDefault();
-    const email = document.getElementById('forgot-email').value.trim().toLowerCase();
-    const errorEl = document.getElementById('auth-error');
-    const successEl = document.getElementById('auth-success');
-    const btn = document.getElementById('forgot-submit-btn');
-
-    errorEl.classList.add('hidden');
-    successEl.classList.add('hidden');
-    btn.disabled = true;
-    btn.innerText = "Checking...";
-
-    const formData = new URLSearchParams();
-    formData.append('action', 'forgot_password');
-    formData.append('email', email);
-
-    try {
-        const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
-        const data = await response.json();
-
-        if (data.success) {
-            successEl.innerText = "Your password has been sent to your registered email!";
-            successEl.classList.remove('hidden');
-        } else {
-            errorEl.innerText = data.message;
-            errorEl.classList.remove('hidden');
-        }
-    } catch (err) {
-        errorEl.innerText = "Connection error. Please try again.";
-        errorEl.classList.remove('hidden');
-    } finally {
+        btn.innerText = "Verify & Create Account";
         btn.disabled = false;
-        btn.innerText = "Send Password to Mail";
     }
 }
 
+// ---------------- REST OF THE SCRIPT (Unchanged) ----------------
 async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value.trim().toLowerCase();
