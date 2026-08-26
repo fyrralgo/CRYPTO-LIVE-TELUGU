@@ -1,1 +1,1 @@
-window.registeredUsersDB = JSON.parse(localStorage.getItem('registeredUsersDB')) || [];
+window.registeredUsersDB = window.registeredUsersDB || [];

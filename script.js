@@ -1,5 +1,5 @@
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
-let isPremiumUser = checkPremiumStatus();
+let isPremiumUser = false;
 let currentVideoIndex = 0;
 let countdownInterval;
 
@@ -15,11 +15,27 @@ const videos = [
     { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://youtu.be/33gUzpo_-sc?si=gWoENjj3bvj50zar", isLocked: true, duration: "55:40" }
 ];
 
-function init() {
+async function init() {
+    await syncServerData();
+    isPremiumUser = checkPremiumStatus();
     checkAuthStatus();
     updateUIState();
     renderPlaylist();
     loadVideo(0);
+}
+
+// Universal Sync: Fetches userdata.txt and UTR.txt across any device
+async function syncServerData() {
+    try {
+        const res = await fetch('api.php?action=sync');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.registered) window.registeredUsersDB = data.registered;
+            if (data.paid) window.paidUsersDB = data.paid;
+        }
+    } catch (e) {
+        console.log("Offline mode: Using local hidden.js / utr.js static data");
+    }
 }
 
 function checkPremiumStatus() {
@@ -64,12 +80,14 @@ function switchAuthTab(mode) {
     }
 }
 
-function handleRegister(e) {
+async function handleRegister(e) {
     e.preventDefault();
     const name = document.getElementById('reg-name').value.trim();
     const email = document.getElementById('reg-email').value.trim().toLowerCase();
     const password = document.getElementById('reg-pass').value;
     const errorEl = document.getElementById('auth-error');
+
+    await syncServerData();
 
     const existsInUnpaid = window.registeredUsersDB.some(u => u.email === email);
     const existsInPaid = window.paidUsersDB.some(u => u.email === email);
@@ -82,9 +100,17 @@ function handleRegister(e) {
 
     const newUser = { id: Date.now(), name, email, password };
     window.registeredUsersDB.push(newUser);
-    localStorage.setItem('registeredUsersDB', JSON.stringify(window.registeredUsersDB));
+
+    // Save to Server text file (userdata.txt)
+    try {
+        await fetch('api.php?action=register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newUser)
+        });
+    } catch(err) { console.error("Cloud save error", err); }
     
-    currentUser = { name: newUser.name, email: newUser.email };
+    currentUser = { name: newUser.name, email: newUser.email, password: newUser.password };
     localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
     
     isPremiumUser = false;
@@ -93,15 +119,18 @@ function handleRegister(e) {
     loadVideo(currentVideoIndex);
 }
 
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value.trim().toLowerCase();
     const password = document.getElementById('login-pass').value;
     const errorEl = document.getElementById('auth-error');
 
+    await syncServerData();
+
+    // 1. Check paid users (UTR.txt & utr.js)
     const paidUser = window.paidUsersDB.find(u => u.email === email && u.password === password);
     if (paidUser) {
-        currentUser = { name: paidUser.name, email: paidUser.email };
+        currentUser = { name: paidUser.name, email: paidUser.email, password: paidUser.password };
         localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
         isPremiumUser = true;
         checkAuthStatus();
@@ -110,9 +139,10 @@ function handleLogin(e) {
         return;
     }
 
+    // 2. Check unpaid users (userdata.txt & hidden.js)
     const unpaidUser = window.registeredUsersDB.find(u => u.email === email && u.password === password);
     if (unpaidUser) {
-        currentUser = { name: unpaidUser.name, email: unpaidUser.email };
+        currentUser = { name: unpaidUser.name, email: unpaidUser.email, password: unpaidUser.password };
         localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
         isPremiumUser = false;
         checkAuthStatus();
@@ -131,7 +161,7 @@ function logout() {
     location.reload();
 }
 
-function submitUTR() {
+async function submitUTR() {
     const utrInput = document.getElementById('utr-input').value.trim();
     const errorMsg = document.getElementById('utr-error');
     
@@ -143,22 +173,23 @@ function submitUTR() {
     errorMsg.classList.add('hidden');
     
     if (currentUser) {
-        const userIndex = window.registeredUsersDB.findIndex(u => u.email === currentUser.email);
-        let userRecord;
-
-        if (userIndex !== -1) {
-            userRecord = window.registeredUsersDB.splice(userIndex, 1)[0];
-        } else {
-            userRecord = { name: currentUser.name, email: currentUser.email, password: "N/A" };
-        }
-
-        userRecord.utr = utrInput;
-        userRecord.paidAt = new Date().toISOString();
+        const userRecord = {
+            name: currentUser.name,
+            email: currentUser.email,
+            password: currentUser.password || "N/A",
+            utr: utrInput
+        };
 
         window.paidUsersDB.push(userRecord);
 
-        localStorage.setItem('registeredUsersDB', JSON.stringify(window.registeredUsersDB));
-        localStorage.setItem('paidUsersDB', JSON.stringify(window.paidUsersDB));
+        // Save to Server text file (UTR.txt)
+        try {
+            await fetch('api.php?action=submit_utr', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userRecord)
+            });
+        } catch(err) { console.error("Cloud UTR save error", err); }
     }
 
     isPremiumUser = true;
@@ -167,7 +198,7 @@ function submitUTR() {
         <div class="text-center py-6">
             <i class="fa-solid fa-circle-check text-6xl text-emerald-500 mb-4 animate-bounce"></i>
             <h2 class="text-2xl font-bold text-white mb-2">Payment Verified!</h2>
-            <p class="text-slate-400 mb-6">కోర్సు అన్‌లాక్ చేయబడింది. User moved to UTR Paid Registry!</p>
+            <p class="text-slate-400 mb-6">కోర్సు అన్‌లాక్ చేయబడింది. User saved to UTR.txt!</p>
         </div>
     `;
 
