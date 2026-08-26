@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6AodjjvUnvz6OLJ5PiIKA1wP03s_-khfCXwlRB25f7v2bBlr3BuLYVJIIZdMUXlVu/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCg_XA9lM63mJu1JFARrUhay5lzpfQb50e8FHbcuNw2KDBb-845VA5qAFk_5IUL7C4/exec';
 
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
@@ -79,6 +79,7 @@ function switchAuthTab(mode) {
 
 async function requestOTP() {
     const name = document.getElementById('reg-name').value.trim();
+    const mobile = document.getElementById('reg-mobile').value.trim();
     const email = document.getElementById('reg-email').value.trim().toLowerCase();
     const password = document.getElementById('reg-pass').value;
     const errorEl = document.getElementById('auth-error');
@@ -88,8 +89,14 @@ async function requestOTP() {
     errorEl.classList.add('hidden');
     successEl.classList.add('hidden');
 
-    if (!name || !email || !password) {
+    if (!name || !mobile || !email || !password) {
         errorEl.innerText = "Please fill in all fields first.";
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    if (!/^[0-9]{10}$/.test(mobile)) {
+        errorEl.innerText = "Please enter a valid 10-digit mobile number.";
         errorEl.classList.remove('hidden');
         return;
     }
@@ -132,6 +139,7 @@ async function requestOTP() {
 async function handleRegister(e) {
     e.preventDefault();
     const name = document.getElementById('reg-name').value.trim();
+    const mobile = document.getElementById('reg-mobile').value.trim();
     const email = document.getElementById('reg-email').value.trim().toLowerCase();
     const password = document.getElementById('reg-pass').value;
     const otp = document.getElementById('reg-otp').value.trim();
@@ -150,6 +158,7 @@ async function handleRegister(e) {
     const formData = new URLSearchParams();
     formData.append('action', 'register');
     formData.append('name', name);
+    formData.append('mobile', mobile);
     formData.append('email', email);
     formData.append('password', password);
     formData.append('otp', otp);
