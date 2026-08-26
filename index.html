@@ -10,6 +10,15 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden bg-slate-900">
 
+    <!-- Scrolling Marquee Notice at the Top -->
+    <div class="bg-blue-600 text-white text-xs md:text-sm font-semibold py-1.5 overflow-hidden whitespace-nowrap z-30 shadow-md">
+        <marquee behavior="scroll" direction="left" scrollamount="5">
+            <span class="mx-4"><i class="fa-solid fa-bullhorn mr-2"></i> WELCOM TO THE CRYPTO LIVE TELUGU MY DEAR STUDENTS</span>
+            <span class="mx-4">•</span>
+            <span class="mx-4"><i class="fa-solid fa-graduation-cap mr-2"></i> Learn Crypto & Forex Trading from Scratch in Telugu</span>
+        </marquee>
+    </div>
+
     <nav class="glass-panel p-3 md:p-4 flex justify-between items-center shadow-lg z-20 border-b border-slate-700">
         <div class="text-xl md:text-2xl font-bold text-blue-400 flex items-center gap-2">
             <i class="fa-brands fa-bitcoin"></i> <span class="hidden md:inline">Crypto & Forex Mastery</span><span class="md:hidden">Trading Course</span>
@@ -26,8 +35,7 @@
     </nav>
 
     <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-        <div class="flex-1 overflow-y-auto flex flex-col p-0 md:p-6 pb-20 md:pb-6">
-            <!-- Increased mobile container height by ~100% using aspect-[16/11] instead of aspect-video -->
+        <div class="flex-1 overflow-y-auto flex flex-col p-0 md:p-6 pb-4 md:pb-6">
             <div id="video-container" class="w-full aspect-[16/11] md:aspect-video bg-black md:rounded-xl overflow-hidden shadow-2xl relative border-b md:border border-slate-700 z-10 sticky top-0 md:static">
                 <iframe id="video-frame" class="w-full h-full hidden" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 
@@ -41,7 +49,6 @@
                     <div class="bg-slate-800 p-2.5 md:p-5 rounded-xl border border-slate-700 w-full max-w-sm mx-auto shadow-xl">
                         <div class="mb-3 flex flex-col items-center bg-white p-1.5 rounded-lg shadow-inner">
                             <p class="text-[11px] md:text-sm text-slate-800 mb-1 font-bold text-center">Scan QR for Premium Classes</p>
-                            <!-- Adjusted QR image dimensions to fit the expanded height cleanly on mobile -->
                             <img src="20kQR.png" alt="Payment QR Code" class="w-32 h-32 md:w-48 md:h-48 object-contain rounded border border-slate-200">
                         </div>
 
@@ -74,7 +81,7 @@
                 <h3 class="font-bold text-lg"><i class="fa-solid fa-list-ul mr-2"></i> Course Playlist</h3>
                 <p class="text-xs text-slate-400 mt-1">4 Modules • Telugu</p>
             </div>
-            <div id="playlist" class="flex-1 overflow-y-auto p-2 scrollbar-hide pb-24 md:pb-2"></div>
+            <div id="playlist" class="flex-1 overflow-y-auto p-2 scrollbar-hide pb-4 md:pb-2"></div>
         </div>
     </div>
 
