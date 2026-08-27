@@ -5,6 +5,7 @@ let isPremiumUser = false;
 let currentVideoIndex = 0;
 let countdownInterval;
 let cartBillingData = null;
+let authTimer = null; // Timer for the 2-minute login popup
 
 const videos = [
     { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
@@ -34,16 +35,35 @@ function checkAuthStatus() {
     const authModal = document.getElementById('auth-modal');
     const userDisplay = document.getElementById('user-display');
     const logoutBtn = document.getElementById('logout-btn');
+    const loginNavBtn = document.getElementById('login-nav-btn');
 
     if (!currentUser) {
-        // Forcefully show authentication modal and prevent closing/bypassing
-        authModal.classList.remove('hidden');
+        // Keep modal hidden initially so user can view previews
+        authModal.classList.add('hidden');
+        if (loginNavBtn) loginNavBtn.classList.remove('hidden');
+
+        // Trigger auth modal after 2 minutes (120,000 ms) if still not logged in
+        if (authTimer) clearTimeout(authTimer);
+        authTimer = setTimeout(() => {
+            if (!currentUser) {
+                authModal.classList.remove('hidden');
+                if (loginNavBtn) loginNavBtn.classList.add('hidden');
+            }
+        }, 120000);
+
     } else {
         authModal.classList.add('hidden');
+        if (loginNavBtn) loginNavBtn.classList.add('hidden');
+        if (authTimer) clearTimeout(authTimer);
+
         userDisplay.innerText = `Hi, ${currentUser.name}`;
         userDisplay.classList.remove('hidden');
         logoutBtn.classList.remove('hidden');
     }
+}
+
+function showAuthModal() {
+    document.getElementById('auth-modal').classList.remove('hidden');
 }
 
 function switchAuthTab(mode) {
@@ -183,7 +203,7 @@ async function handleRegister(e) {
         loadVideo(currentVideoIndex);
     } catch (err) {
         errorEl.innerText = "Connection error. Please try again.";
-        errorEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
     }
 }
 
