@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2wcD5kzD9BJHxT7NGd_Uug8yqjXbpvSAxt4gO66_1oifUwqqxLo2c9nNoz6OcVzks/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEH9qxeg3HAzLO62711CdiNYz0p0C8symiAqW9akm1S6JiVRYHPfTfj9fCXriaYRqN/exec';
 
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
@@ -38,9 +38,11 @@ function checkAuthStatus() {
     const loginNavBtn = document.getElementById('login-nav-btn');
 
     if (!currentUser) {
+        // Keep modal hidden initially so user can view previews
         authModal.classList.add('hidden');
         if (loginNavBtn) loginNavBtn.classList.remove('hidden');
 
+        // Trigger auth modal after 2 minutes (120,000 ms) if still not logged in
         if (authTimer) clearTimeout(authTimer);
         authTimer = setTimeout(() => {
             if (!currentUser) {
@@ -237,7 +239,7 @@ async function handleLogin(e) {
         }
     } catch (err) {
         errorEl.innerText = "Connection error. Please try again.";
-        errorEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
     }
 }
 
@@ -267,131 +269,95 @@ async function handleForgotPassword(e) {
         }
     } catch (err) {
         errorEl.innerText = "Connection error. Please try again.";
-        errorEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
     }
 }
 
-// --- Google Pay & PaymentRequest Integration ---
-
-const canMakePaymentCache = 'canMakePaymentCache';
-
-function checkCanMakePayment(request) {
-    if (sessionStorage.hasOwnProperty(canMakePaymentCache)) {
-        return Promise.resolve(JSON.parse(sessionStorage[canMakePaymentCache]));
+function openCartModal(e) {
+    if(e) e.preventDefault();
+    const cartModal = document.getElementById('cart-modal');
+    if (currentUser) {
+        document.getElementById('cart-name').value = currentUser.name || '';
+        document.getElementById('cart-email').value = currentUser.email || '';
+        if (currentUser.mobile) document.getElementById('cart-mobile').value = currentUser.mobile;
     }
-
-    var canMakePaymentPromise = Promise.resolve(true);
-    if (request.canMakePayment) {
-        canMakePaymentPromise = request.canMakePayment();
-    }
-
-    return canMakePaymentPromise
-        .then((result) => {
-            sessionStorage[canMakePaymentCache] = result;
-            return result;
-        })
-        .catch((err) => {
-            console.log('Error calling canMakePayment: ' + err);
-        });
+    cartModal.classList.remove('hidden');
 }
 
-function onBuyClicked() {
-    if (!currentUser || !currentUser.email) {
-        alert('Please log in first before completing the payment.');
-        showAuthModal();
-        return;
-    }
+function closeCartModal() {
+    document.getElementById('cart-modal').classList.add('hidden');
+}
 
-    if (!window.PaymentRequest) {
-        alert('Web payments are not supported in this browser.');
-        return;
-    }
+function handleCartSubmit(e) {
+    e.preventDefault();
 
-    const supportedInstruments = [
-        {
-            supportedMethods: ['https://tez.google.com/pay'],
-            data: {
-                pa: '9959246246@ybl',
-                pn: 'Shaik Raheem',
-                tr: 'TR_' + new Date().getTime(),  
-                url: window.location.origin,
-                mc: '5799', 
-                tn: 'Crypto & Forex Mastery Course Fee',
-            },
-        }
-    ];
-
-    const details = {
-        total: {
-            label: 'Total Amount',
-            amount: {
-                currency: 'INR',
-                value: '20000.00',
-            },
-        },
-        displayItems: [{
-            label: 'Crypto & Forex Mastery Complete Telugu Course Access',
-            amount: {
-                currency: 'INR',
-                value: '20000.00',
-            },
-        }],
+    cartBillingData = {
+        name: document.getElementById('cart-name').value.trim(),
+        mobile: document.getElementById('cart-mobile').value.trim(),
+        email: document.getElementById('cart-email').value.trim().toLowerCase(),
+        address: document.getElementById('cart-address').value.trim(),
+        state: document.getElementById('cart-state').value.trim(),
+        country: document.getElementById('cart-country').value,
+        pincode: document.getElementById('cart-pincode').value.trim()
     };
 
-    let request = null;
-    try {
-        request = new PaymentRequest(supportedInstruments, details);
-    } catch (e) {
-        console.log('Payment Request Error: ' + e.message);
+    closeCartModal();
+    initiatePayment();
+}
+
+function initiatePayment() {
+    const btn = document.getElementById('pay-btn');
+    const qrBtn = document.getElementById('qr-paid-btn'); 
+    const msg = document.getElementById('countdown-msg');
+    const timerEl = document.getElementById('timer');
+    
+    btn.classList.add('opacity-50', 'pointer-events-none');
+    if (qrBtn) qrBtn.classList.add('opacity-50', 'pointer-events-none'); 
+    msg.classList.remove('hidden');
+    
+    let timeLeft = 10; 
+    timerEl.innerText = timeLeft;
+
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+        timeLeft--;
+        timerEl.innerText = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+            showUtrModal();
+            resetPaymentUI();
+        }
+    }, 1000);
+
+    window.open('upi://pay?pa=9959246246@ybl&pn=ShaikRaheem&cu=INR&am=499', '_blank');
+}
+
+async function submitUTR() {
+    const utrInput = document.getElementById('utr-input').value.trim();
+    const errorMsg = document.getElementById('utr-error');
+    
+    if (utrInput.length < 8) {
+        errorMsg.classList.remove('hidden');
         return;
     }
+    errorMsg.classList.add('hidden');
 
-    checkCanMakePayment(request)
-        .then((result) => {
-            showPaymentUI(request, result);
-        })
-        .catch((err) => {
-            console.log('Error checking payment readiness: ' + err);
-        });
-}
+    const activeEmail = cartBillingData ? cartBillingData.email : (currentUser ? currentUser.email : '');
+    if (!activeEmail) return;
 
-function showPaymentUI(request, canMakePayment) {
-    if (!canMakePayment) {
-        alert('Google Pay is not ready or supported on this device/browser.');
-        return;
-    }
-
-    let paymentTimeout = window.setTimeout(function () {
-        window.clearTimeout(paymentTimeout);
-        request.abort().catch(() => {});
-    }, 20 * 60 * 1000);
-
-    request.show()
-        .then(function (instrument) {
-            window.clearTimeout(paymentTimeout);
-            processResponse(instrument);
-        })
-        .catch(function (err) {
-            console.log('Payment aborted or failed: ', err);
-        });
-}
-
-function processResponse(instrument) {
-    var transactionId = instrument.details.paymentId || ('GPay_' + Date.now());
-    verifyAndUnlockAfterGPay(transactionId, instrument);
-}
-
-async function verifyAndUnlockAfterGPay(utrRef, instrument) {
     const formData = new URLSearchParams();
     formData.append('action', 'submit_utr');
-    formData.append('email', currentUser.email.toLowerCase().trim());
-    formData.append('utr', utrRef);
-    formData.append('name', currentUser.name || (instrument.payerName ?? 'Valued Customer'));
-    formData.append('mobile', currentUser.mobile || (instrument.payerPhone ?? ''));
-    formData.append('address', 'Online GPay User');
-    formData.append('state', 'State');
-    formData.append('country', 'India');
-    formData.append('pincode', '000000');
+    formData.append('email', activeEmail.toLowerCase().trim());
+    formData.append('utr', utrInput);
+
+    if (cartBillingData) {
+        formData.append('name', cartBillingData.name);
+        formData.append('mobile', cartBillingData.mobile);
+        formData.append('address', cartBillingData.address);
+        formData.append('state', cartBillingData.state);
+        formData.append('country', cartBillingData.country);
+        formData.append('pincode', cartBillingData.pincode);
+    }
 
     try {
         const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
@@ -399,30 +365,28 @@ async function verifyAndUnlockAfterGPay(utrRef, instrument) {
 
         if (data.success) {
             isPremiumUser = true;
-            instrument.complete('success').then(() => {
-                alert('Payment Successful! Course content is now unlocked and invoice has been mailed.');
+            
+            document.getElementById('utr-modal-content').innerHTML = `
+                <div class="text-center py-6">
+                    <i class="fa-solid fa-circle-check text-6xl text-emerald-500 mb-4 animate-bounce"></i>
+                    <h2 class="text-2xl font-bold text-white mb-2">Payment Verified!</h2>
+                    <p class="text-slate-400 mb-4">కోర్సు అన్‌లాక్ చేయబడింది. Content Unlocked!</p>
+                    <p class="text-xs text-emerald-400 bg-emerald-500/10 p-2 rounded border border-emerald-500/30">
+                        <i class="fa-solid fa-envelope mr-1"></i> Invoice PDF has been sent to your Gmail ID.
+                    </p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                closeModal();
                 updateUIState();
                 renderPlaylist();
                 loadVideo(currentVideoIndex);
-            });
-        } else {
-            instrument.complete('fail');
-            alert('Server verification failed: ' + data.message);
+            }, 3000);
         }
     } catch (err) {
-        instrument.complete('fail');
-        console.error('Network error during verification', err);
+        console.error("UTR submission failed", err);
     }
-}
-
-function instrumentToJsonString(paymentResponse) {
-    return JSON.stringify({
-        methodName: paymentResponse.methodName,
-        details: paymentResponse.details,
-        payerName: paymentResponse.payerName,
-        payerPhone: paymentResponse.payerPhone,
-        payerEmail: paymentResponse.payerEmail,
-    }, undefined, 2);
 }
 
 function renderPlaylist() {
@@ -456,7 +420,8 @@ function loadVideo(index) {
     document.getElementById('video-desc').innerText = video.desc;
     const iframe = document.getElementById('video-frame');
     const overlay = document.getElementById('locked-overlay');
-    
+    resetPaymentUI(); 
+
     if (video.isLocked && !isPremiumUser) {
         iframe.classList.add('hidden');
         iframe.src = ""; 
@@ -472,6 +437,36 @@ function loadVideo(index) {
     if (window.innerWidth < 768) {
         document.querySelector('.flex-1.overflow-y-auto').scrollTo({ top: 0, behavior: 'smooth' });
     }
+}
+
+function resetPaymentUI() {
+    clearInterval(countdownInterval);
+    document.getElementById('pay-btn').classList.remove('opacity-50', 'pointer-events-none');
+    const qrBtn = document.getElementById('qr-paid-btn'); 
+    if (qrBtn) qrBtn.classList.remove('opacity-50', 'pointer-events-none'); 
+    document.getElementById('countdown-msg').classList.add('hidden');
+}
+
+function showUtrModal() {
+    const modal = document.getElementById('utr-modal');
+    const content = document.getElementById('utr-modal-content');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        content.classList.remove('scale-95');
+    }, 10);
+}
+
+function closeModal() {
+    const modal = document.getElementById('utr-modal');
+    const content = document.getElementById('utr-modal-content');
+    modal.classList.add('opacity-0');
+    content.classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        document.getElementById('utr-input').value = '';
+        document.getElementById('utr-error').classList.add('hidden');
+    }, 300); 
 }
 
 function updateUIState() {
