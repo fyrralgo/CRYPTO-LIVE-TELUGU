@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6qM_M0P6g93MZ53i8OK0ENQ_kO0nl2vJMsp22PmyNvhbJJyByqsulLBSheD6pyHw1/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyn5zuAQnNPUYFCB37zI07YaMh_SNg4w4ehgKvmGW7UPeksfupS3K8Qi3eJHQ3FRqKP/exec';
 
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
@@ -68,22 +68,27 @@ function showAuthModal(showNotice = false) {
     document.getElementById('auth-modal').classList.remove('hidden');
 }
 
+/* Requirement 2 & 3: Lock Click Handler */
 function handleUnlockClick() {
+    // Requirement 2: Check if user is logged in/registered first
     if (!currentUser) {
         showAuthModal(true);
         return;
     }
 
+    // Requirement 3: If logged in, open the Digit Input Popup first
     document.getElementById('amount-digit-input').value = '';
     validateAmountDigitInput();
     document.getElementById('amount-modal').classList.remove('hidden');
 }
 
+/* Requirement 3: Digit Matching Validation */
 function validateAmountDigitInput() {
     const inputVal = document.getElementById('amount-digit-input').value.trim();
     const nextBtn = document.getElementById('amount-next-btn');
 
-    if (inputVal === '499') {
+    // Strict validation for exact digit match: "INR 1.00"
+    if (inputVal === 'INR 1.00') {
         nextBtn.disabled = false;
         nextBtn.className = "flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition text-sm shadow-lg shadow-emerald-500/30 cursor-pointer";
     } else {
@@ -339,11 +344,14 @@ async function handleForgotPassword(e) {
     }
 }
 
-function submitUTR() {
+/* Requirement 4: UTR Submission with 45-Second Loading & Verification Check */
+async function submitUTR() {
     const utrInput = document.getElementById('utr-input').value.trim();
     const errorMsg = document.getElementById('utr-error');
     const formContainer = document.getElementById('utr-form-container');
     const loadingContainer = document.getElementById('utr-loading-container');
+    const congratsContainer = document.getElementById('congratulations-container');
+    const progressBar = document.getElementById('utr-progress-bar');
     
     if (utrInput.length < 8) {
         errorMsg.innerText = "Please enter a valid UTR reference number.";
@@ -355,9 +363,17 @@ function submitUTR() {
     const activeEmail = cartBillingData ? cartBillingData.email : (currentUser ? currentUser.email : '');
     if (!activeEmail) return;
 
-    // Show loading state while the script polls Google Sheets (up to 120s)
+    // Show 45-second verification loader UI
     formContainer.classList.add('hidden');
     loadingContainer.classList.remove('hidden');
+    progressBar.style.width = '0%';
+    
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += 2.2;
+        if (progress > 98) progress = 98;
+        progressBar.style.width = progress + '%';
+    }, 1000);
 
     const formData = new URLSearchParams();
     formData.append('action', 'submit_utr');
@@ -373,49 +389,39 @@ function submitUTR() {
         formData.append('pincode', cartBillingData.pincode);
     }
 
-    fetch(SCRIPT_URL, { method: 'POST', body: formData })
-      .then(res => res.json())
-      .then(data => {
+    try {
+        const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
+        const data = await response.json();
+        
+        clearInterval(progressInterval);
+        progressBar.style.width = '100%';
+
         if (data.success) {
-          loadingContainer.classList.add('hidden');
-          
-          // Fallback variable setup just in case the DOM ID is using your previous structure
-          const popup = document.getElementById('congratulationsPopup') || document.getElementById('congratulations-container');
-          
-          if (popup) {
-              popup.classList.remove('hidden');
-              popup.style.display = 'block';
-          }
+            // Requirement 4: Success - Send invoice (handled in GS), unlock course, show Congratulations popup
+            isPremiumUser = true;
+            loadingContainer.classList.add('hidden');
+            congratsContainer.classList.remove('hidden');
 
-          // Hide popup and unlock course after 10 seconds
-          setTimeout(() => {
-            if (popup) {
-                popup.style.display = 'none';
-                popup.classList.add('hidden');
-            }
-            unlockCourse();
-          }, 10000);
-          
+            setTimeout(() => {
+                closeModal();
+                updateUIState();
+                renderPlaylist();
+                loadVideo(currentVideoIndex);
+            }, 4000);
         } else {
-          loadingContainer.classList.add('hidden');
-          formContainer.classList.remove('hidden');
-          alert(data.message); 
+            // Requirement 4: Failure - Show "Submit Valid UTR" and do not send invoice / unlock
+            loadingContainer.classList.add('hidden');
+            formContainer.classList.remove('hidden');
+            errorMsg.innerText = data.message || "Submit Valid UTR";
+            errorMsg.classList.remove('hidden');
         }
-      })
-      .catch(err => {
-          loadingContainer.classList.add('hidden');
-          formContainer.classList.remove('hidden');
-          alert("Submit the Correct UTR ID");
-      });
-}
-
-// UI function to reveal premium modules smoothly
-function unlockCourse() {
-    isPremiumUser = true;
-    closeModal();
-    updateUIState();
-    renderPlaylist();
-    loadVideo(currentVideoIndex);
+    } catch (err) {
+        clearInterval(progressInterval);
+        loadingContainer.classList.add('hidden');
+        formContainer.classList.remove('hidden');
+        errorMsg.innerText = "Submit Valid UTR";
+        errorMsg.classList.remove('hidden');
+    }
 }
 
 function renderPlaylist() {
