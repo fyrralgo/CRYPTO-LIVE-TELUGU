@@ -13,7 +13,7 @@
     <!-- Scrolling Marquee Notice at the Top -->
     <div class="bg-blue-600 text-white text-xs md:text-sm font-semibold py-1.5 overflow-hidden whitespace-nowrap z-30 shadow-md">
         <marquee behavior="scroll" direction="left" scrollamount="5">
-            <span class="mx-4"><i class="fa-solid fa-bullhorn mr-2"></i> WELCOM TO THE CRYPTO LIVE TELUGU MY DEAR STUDENTS</span>
+            <span class="mx-4"><i class="fa-solid fa-bullhorn mr-2"></i> WELCOME TO THE CRYPTO LIVE TELUGU MY DEAR STUDENTS</span>
             <span class="mx-4">•</span>
             <span class="mx-4"><i class="fa-solid fa-graduation-cap mr-2"></i> Learn Crypto & Forex Trading from Scratch in Telugu</span>
         </marquee>
@@ -43,7 +43,7 @@
                     <i class="fa-solid fa-lock text-2xl md:text-5xl text-slate-500 mb-1.5 md:mb-3"></i>
                     <h2 class="text-base md:text-2xl font-bold text-white mb-1">Premium Content Locked</h2>
                     <p class="text-xs md:text-base text-slate-400 mb-3 max-w-md hidden md:block">
-                        ఈ వీడియో చూడటానికి కోర్సును కొనుగోలు చేయండి (₹20,000). Payment బటన్ క్లిక్ చేసిన 1 నిమిషం తర్వాత UTR విండో ఓపెన్ అవుతుంది.
+                        ఈ వీడియో చూడటానికి కోర్సును కొనుగోలు చేయండి (₹20,000). Payment బటన్ క్లిక్ చేసిన 10 సెకన్ల తర్వాత UTR విండో ఓపెన్ అవుతుంది.
                     </p>
                     
                     <div class="bg-slate-800 p-2.5 md:p-5 rounded-xl border border-slate-700 w-full max-w-sm mx-auto shadow-xl">
@@ -52,19 +52,22 @@
                             <img src="20kQR.png" alt="Payment QR Code" class="w-32 h-32 md:w-48 md:h-48 object-contain rounded border border-slate-200">
                         </div>
 
-                        <a id="pay-btn" href="upi://pay?pa=9959246246@ybl&pn=ShaikRaheem&cu=INR&am=20000" target="_blank" onclick="initiatePayment()"
+                        <!-- Changed to open cart modal first instead of direct UPI link -->
+                        <button id="pay-btn" type="button" onclick="openCartModal(event)"
                            class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition text-center shadow-lg shadow-blue-500/30 text-xs md:text-base">
                             <i class="fa-solid fa-qrcode mr-2"></i> Pay ₹20,000 via UPI
-                        </a>
+                        </button>
                         
-                        <button id="qr-paid-btn" onclick="initiatePayment()"
+                        <!-- Also mapped to cart modal -->
+                        <button id="qr-paid-btn" type="button" onclick="openCartModal(event)"
                            class="block w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition text-center shadow-lg shadow-emerald-500/30 text-xs md:text-base">
                             <i class="fa-solid fa-check-circle mr-2"></i> Paid with QR
                         </button>
                         
                         <div id="countdown-msg" class="mt-2 text-xs md:text-sm font-semibold text-yellow-400 hidden bg-yellow-400/10 p-2 rounded-lg border border-yellow-400/20">
                             <i class="fa-solid fa-spinner fa-spin mr-1"></i> Waiting for payment... <br>
-                            <span class="text-white mt-0.5 block">UTR విండో <span id="timer" class="text-yellow-400 font-bold text-sm md:text-base">60</span> సెకన్లలో ఓపెన్ అవుతుంది.</span>
+                            <!-- Adjusted default text to 10 -->
+                            <span class="text-white mt-0.5 block">UTR విండో <span id="timer" class="text-yellow-400 font-bold text-sm md:text-base">10</span> సెకన్లలో ఓపెన్ అవుతుంది.</span>
                         </div>
                     </div>
                 </div>
@@ -82,6 +85,58 @@
                 <p class="text-xs text-slate-400 mt-1">4 Modules • Telugu</p>
             </div>
             <div id="playlist" class="flex-1 overflow-y-auto p-2 scrollbar-hide pb-4 md:pb-2"></div>
+        </div>
+    </div>
+
+    <!-- Cart / Billing Details Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 backdrop-blur-md hidden overflow-y-auto">
+        <div class="bg-slate-800 p-6 md:p-8 rounded-2xl border border-slate-700 w-full max-w-md shadow-2xl my-auto">
+            <h2 class="text-xl font-bold text-white mb-3 border-b border-slate-700 pb-2"><i class="fa-solid fa-file-invoice mr-2"></i> Billing Details</h2>
+            <p class="text-xs text-slate-400 mb-4">Please fill in your details to receive the invoice for the CRYPTO TELUGU COURSE.</p>
+            
+            <form id="cart-form" onsubmit="handleCartSubmit(event)" class="flex flex-col gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Full Name</label>
+                    <input type="text" id="cart-name" required placeholder="Your Name" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Gmail ID (For Invoice)</label>
+                    <input type="email" id="cart-email" required placeholder="yourname@gmail.com" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Mobile Number</label>
+                    <input type="tel" id="cart-mobile" required placeholder="9876543210" pattern="[0-9]{10}" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Address</label>
+                    <input type="text" id="cart-address" required placeholder="House No, Street, City" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-blue-500 text-sm">
+                </div>
+                <div class="flex gap-3">
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">State</label>
+                        <input type="text" id="cart-state" required placeholder="Telangana" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-blue-500 text-sm">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Pincode</label>
+                        <input type="text" id="cart-pincode" required placeholder="500001" pattern="[0-9]{6}" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-blue-500 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Country</label>
+                    <select id="cart-country" required class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-blue-500 text-sm">
+                        <option value="India" selected>India</option>
+                        <option value="USA">USA</option>
+                        <option value="UK">UK</option>
+                        <option value="UAE">UAE</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="flex gap-3 mt-3">
+                    <button type="button" onclick="closeCartModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 rounded-lg transition text-sm">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition text-sm shadow-lg shadow-blue-500/30">Proceed to Pay</button>
+                </div>
+            </form>
         </div>
     </div>
 

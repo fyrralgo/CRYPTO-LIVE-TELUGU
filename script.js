@@ -252,7 +252,8 @@ async function handleForgotPassword(e) {
     }
 }
 
-function openCartModal() {
+function openCartModal(e) {
+    if(e) e.preventDefault(); // Stop default navigation if button had an href
     const cartModal = document.getElementById('cart-modal');
     if (currentUser) {
         document.getElementById('cart-name').value = currentUser.name || '';
@@ -293,7 +294,8 @@ function initiatePayment() {
     if (qrBtn) qrBtn.classList.add('opacity-50', 'pointer-events-none'); 
     msg.classList.remove('hidden');
     
-    let timeLeft = 60; 
+    // Changed countdown to 10 seconds as requested
+    let timeLeft = 10; 
     timerEl.innerText = timeLeft;
 
     clearInterval(countdownInterval);
@@ -307,6 +309,7 @@ function initiatePayment() {
         }
     }, 1000);
 
+    // Now open UPI intent as normal after they filled the cart details
     window.open('upi://pay?pa=9959246246@ybl&pn=ShaikRaheem&cu=INR&am=20000', '_blank');
 }
 
