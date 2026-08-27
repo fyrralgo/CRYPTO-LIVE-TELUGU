@@ -1,4 +1,16 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF8plBbYjrMWrrzte59os3GirV8Lx8BDv8XR4Vqzf0RHIQIVe5lDeznE98cwsOYz1Y/exec';
+// Show 120-second verification loader UI
+    formContainer.classList.add('hidden');
+    loadingContainer.classList.remove('hidden');
+    progressBar.style.width = '0%';
+    
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += 0.83; // 100% divided by 120 seconds
+        if (progress > 98) progress = 98;
+        progressBar.style.width = progress + '%';
+    }, 1000);
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0hWtzz58yWvH2DvrFqwa1nIGTaiIwtjt0ydkRTDGqnN2SuhWPLRZHywZsAmj6XKtR/exec';
 
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
@@ -87,8 +99,8 @@ function validateAmountDigitInput() {
     const inputVal = document.getElementById('amount-digit-input').value.trim();
     const nextBtn = document.getElementById('amount-next-btn');
 
-    // Strict validation for exact digit match: "499"
-    if (inputVal === '499') {
+    // Strict validation for exact digit match: "INR 1.00"
+    if (inputVal === 'INR 1.00') {
         nextBtn.disabled = false;
         nextBtn.className = "flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition text-sm shadow-lg shadow-emerald-500/30 cursor-pointer";
     } else {
@@ -370,7 +382,7 @@ async function submitUTR() {
     
     let progress = 0;
     const progressInterval = setInterval(() => {
-        progress += 2.2;
+        progress += 0.83; // 100% divided by 120 seconds
         if (progress > 98) progress = 98;
         progressBar.style.width = progress + '%';
     }, 1000);
