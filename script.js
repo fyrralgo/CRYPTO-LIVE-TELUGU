@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMgujhGez9BH76kfn2JWraR1qd_KRUQGS7AmrEXjzRMX9ia33pZhZGqJI1bzdIfri0/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyy6PlUbzUHRXr6grEpw2tkFSOnqrBQuyORtieV_hmInZAfwkEo39Mgsl62u301Nxo/exec';
 
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
