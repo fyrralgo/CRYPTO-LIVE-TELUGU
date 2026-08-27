@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsu7-12DacUBKizZhzYms2yFjs-OGoNIP8YMFMpXxeOJ7nsmR3wQWzhrQtZaMLsnXl/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2wcD5kzD9BJHxT7NGd_Uug8yqjXbpvSAxt4gO66_1oifUwqqxLo2c9nNoz6OcVzks/exec';
 
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
@@ -14,9 +14,9 @@ const videos = [
 ];
 
 async function init() {
-    if (currentUser) {
+    if (currentUser && currentUser.email) {
         try {
-            const res = await fetch(`${SCRIPT_URL}?action=check_status&email=${encodeURIComponent(currentUser.email)}`);
+            const res = await fetch(`${SCRIPT_URL}?action=check_status&email=${encodeURIComponent(currentUser.email.toLowerCase().trim())}`);
             const data = await res.json();
             isPremiumUser = data.isPremium;
         } catch (err) {
@@ -174,10 +174,11 @@ async function handleRegister(e) {
 
         currentUser = { name: data.name, email: data.email, mobile: mobile };
         localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
-        isPremiumUser = false;
+        isPremiumUser = data.isPremium || false;
         
         checkAuthStatus();
         updateUIState();
+        renderPlaylist();
         loadVideo(currentVideoIndex);
     } catch (err) {
         errorEl.innerText = "Connection error. Please try again.";
@@ -209,6 +210,7 @@ async function handleLogin(e) {
             
             checkAuthStatus();
             updateUIState();
+            renderPlaylist();
             loadVideo(currentVideoIndex);
         } else {
             errorEl.innerText = data.message;
@@ -323,7 +325,7 @@ async function submitUTR() {
 
     const formData = new URLSearchParams();
     formData.append('action', 'submit_utr');
-    formData.append('email', activeEmail);
+    formData.append('email', activeEmail.toLowerCase().trim());
     formData.append('utr', utrInput);
 
     if (cartBillingData) {
@@ -356,6 +358,7 @@ async function submitUTR() {
             setTimeout(() => {
                 closeModal();
                 updateUIState();
+                renderPlaylist();
                 loadVideo(currentVideoIndex);
             }, 3000);
         }
@@ -404,7 +407,7 @@ function loadVideo(index) {
     } else {
         overlay.classList.add('hidden');
         iframe.classList.remove('hidden');
-        if(iframe.src !== video.url) {
+        if (iframe.src !== video.url) {
             iframe.src = video.url;
         }
     }
