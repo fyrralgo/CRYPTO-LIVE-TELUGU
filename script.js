@@ -5,20 +5,10 @@ let isPremiumUser = false;
 let currentVideoIndex = 0;
 let countdownInterval;
 let cartBillingData = null;
+let authTimer = null; // Timer for the 2-minute login popup
 
 const videos = [
     { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-{ title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-{ title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-{ title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-{ title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-{ title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-{ title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-{ title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-{ title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-{ title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-{ title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
-{ title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
     { title: "2. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?si=WjwQn36jQI8scn3Z", isLocked: false, duration: "45:10" },
     { title: "3. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/JgV8ayiVs6s?si=WjwQn36jQI8scn3Z", isLocked: true, duration: "32:05" },
     { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://youtu.be/33gUzpo_-sc?si=gWoENjj3bvj50zar", isLocked: true, duration: "55:40" }
@@ -45,15 +35,35 @@ function checkAuthStatus() {
     const authModal = document.getElementById('auth-modal');
     const userDisplay = document.getElementById('user-display');
     const logoutBtn = document.getElementById('logout-btn');
+    const loginNavBtn = document.getElementById('login-nav-btn');
 
     if (!currentUser) {
-        authModal.classList.remove('hidden');
+        // Keep modal hidden initially so user can view previews
+        authModal.classList.add('hidden');
+        if (loginNavBtn) loginNavBtn.classList.remove('hidden');
+
+        // Trigger auth modal after 2 minutes (120,000 ms) if still not logged in
+        if (authTimer) clearTimeout(authTimer);
+        authTimer = setTimeout(() => {
+            if (!currentUser) {
+                authModal.classList.remove('hidden');
+                if (loginNavBtn) loginNavBtn.classList.add('hidden');
+            }
+        }, 120000);
+
     } else {
         authModal.classList.add('hidden');
+        if (loginNavBtn) loginNavBtn.classList.add('hidden');
+        if (authTimer) clearTimeout(authTimer);
+
         userDisplay.innerText = `Hi, ${currentUser.name}`;
         userDisplay.classList.remove('hidden');
         logoutBtn.classList.remove('hidden');
     }
+}
+
+function showAuthModal() {
+    document.getElementById('auth-modal').classList.remove('hidden');
 }
 
 function switchAuthTab(mode) {
@@ -264,7 +274,7 @@ async function handleForgotPassword(e) {
 }
 
 function openCartModal(e) {
-    if(e) e.preventDefault(); // Stop default navigation if button had an href
+    if(e) e.preventDefault();
     const cartModal = document.getElementById('cart-modal');
     if (currentUser) {
         document.getElementById('cart-name').value = currentUser.name || '';
@@ -305,7 +315,6 @@ function initiatePayment() {
     if (qrBtn) qrBtn.classList.add('opacity-50', 'pointer-events-none'); 
     msg.classList.remove('hidden');
     
-    // Changed countdown to 10 seconds as requested
     let timeLeft = 10; 
     timerEl.innerText = timeLeft;
 
@@ -320,7 +329,6 @@ function initiatePayment() {
         }
     }, 1000);
 
-    // Now open UPI intent as normal after they filled the cart details
     window.open('upi://pay?pa=9959246246@ybl&pn=ShaikRaheem&cu=INR&am=20000', '_blank');
 }
 
