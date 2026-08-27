@@ -87,8 +87,8 @@ function validateAmountDigitInput() {
     const inputVal = document.getElementById('amount-digit-input').value.trim();
     const nextBtn = document.getElementById('amount-next-btn');
 
-    // Strict validation for exact digit match: "INR 1.00"
-    if (inputVal === 'INR 1.00') {
+    // Strict validation for exact digit match: "499"
+    if (inputVal === '499') {
         nextBtn.disabled = false;
         nextBtn.className = "flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition text-sm shadow-lg shadow-emerald-500/30 cursor-pointer";
     } else {
