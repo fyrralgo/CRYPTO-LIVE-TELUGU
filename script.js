@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyyUTerAuHZ33KeBZZDR06kwPb2d-inrMTPpK50J1nQofhs462AWlNqAPfo9rD_79QM/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF8plBbYjrMWrrzte59os3GirV8Lx8BDv8XR4Vqzf0RHIQIVe5lDeznE98cwsOYz1Y/exec';
 
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
@@ -87,8 +87,8 @@ function validateAmountDigitInput() {
     const inputVal = document.getElementById('amount-digit-input').value.trim();
     const nextBtn = document.getElementById('amount-next-btn');
 
-    // Strict validation for exact digit match: "INR 1.00"
-    if (inputVal === 'INR 1.00') {
+    // Strict validation for exact digit match: "499"
+    if (inputVal === '499') {
         nextBtn.disabled = false;
         nextBtn.className = "flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition text-sm shadow-lg shadow-emerald-500/30 cursor-pointer";
     } else {
@@ -344,7 +344,7 @@ async function handleForgotPassword(e) {
     }
 }
 
-/* Requirement 4: UTR Submission with 45-Second Loading & Verification Check */
+/* Requirement 4: UTR Submission with 120-Second Loading & Verification Check */
 async function submitUTR() {
     const utrInput = document.getElementById('utr-input').value.trim();
     const errorMsg = document.getElementById('utr-error');
@@ -363,7 +363,7 @@ async function submitUTR() {
     const activeEmail = cartBillingData ? cartBillingData.email : (currentUser ? currentUser.email : '');
     if (!activeEmail) return;
 
-    // Show 45-second verification loader UI
+    // Show 120-second verification loader UI
     formContainer.classList.add('hidden');
     loadingContainer.classList.remove('hidden');
     progressBar.style.width = '0%';
