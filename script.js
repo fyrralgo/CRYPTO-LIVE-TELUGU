@@ -1,11 +1,10 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqOstK9lz76iyLVbcNs6h_1vfvy6peJzHt2jiBmKkVD8G0_W318IUV4TO8HHLDXEU/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz_cCOT7ZWVGRjOVrv7Y2vHoIyf2AThOgB7qvcUq6rgHzBmUE085EJ9icb8JIcoSw84/exec';
 
 let currentUser = JSON.parse(localStorage.getItem('loggedInUser')) || null;
 let isPremiumUser = false;
 let currentVideoIndex = 0;
-let countdownInterval;
 let cartBillingData = null;
-let authTimer = null; // Timer for the 2-minute login popup
+let authTimer = null;
 
 const videos = [
     { title: "1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/dFGVGrc5xHU?si=H26JVaM2ZUj4Mu4m", isLocked: false, duration: "15:20" },
@@ -38,16 +37,13 @@ function checkAuthStatus() {
     const loginNavBtn = document.getElementById('login-nav-btn');
 
     if (!currentUser) {
-        // Keep modal hidden initially so user can view previews
         authModal.classList.add('hidden');
         if (loginNavBtn) loginNavBtn.classList.remove('hidden');
 
-        // Trigger auth modal after 2 minutes (120,000 ms) if still not logged in
         if (authTimer) clearTimeout(authTimer);
         authTimer = setTimeout(() => {
             if (!currentUser) {
-                authModal.classList.remove('hidden');
-                if (loginNavBtn) loginNavBtn.classList.add('hidden');
+                showAuthModal();
             }
         }, 120000);
 
@@ -62,8 +58,83 @@ function checkAuthStatus() {
     }
 }
 
-function showAuthModal() {
+function showAuthModal(showNotice = false) {
+    const noticeEl = document.getElementById('auth-notice');
+    if (showNotice) {
+        noticeEl.classList.remove('hidden');
+    } else {
+        noticeEl.classList.add('hidden');
+    }
     document.getElementById('auth-modal').classList.remove('hidden');
+}
+
+/* Requirement 2 & 3: Lock Click Handler */
+function handleUnlockClick() {
+    // Requirement 2: Check if user is logged in/registered first
+    if (!currentUser) {
+        showAuthModal(true);
+        return;
+    }
+
+    // Requirement 3: If logged in, open the Digit Input Popup first
+    document.getElementById('amount-digit-input').value = '';
+    validateAmountDigitInput();
+    document.getElementById('amount-modal').classList.remove('hidden');
+}
+
+/* Requirement 3: Digit Matching Validation */
+function validateAmountDigitInput() {
+    const inputVal = document.getElementById('amount-digit-input').value.trim();
+    const nextBtn = document.getElementById('amount-next-btn');
+
+    // Strict validation for exact digit match: "INR 1.00"
+    if (inputVal === 'INR 1.00') {
+        nextBtn.disabled = false;
+        nextBtn.className = "flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition text-sm shadow-lg shadow-emerald-500/30 cursor-pointer";
+    } else {
+        nextBtn.disabled = true;
+        nextBtn.className = "flex-1 bg-slate-600 text-slate-400 font-bold py-2.5 rounded-lg transition text-sm cursor-not-allowed";
+    }
+}
+
+function closeAmountModal() {
+    document.getElementById('amount-modal').classList.add('hidden');
+}
+
+function proceedToQRModal() {
+    closeAmountModal();
+    openCartModal();
+}
+
+function openCartModal() {
+    const cartModal = document.getElementById('cart-modal');
+    if (currentUser) {
+        document.getElementById('cart-name').value = currentUser.name || '';
+        document.getElementById('cart-email').value = currentUser.email || '';
+        if (currentUser.mobile) document.getElementById('cart-mobile').value = currentUser.mobile;
+    }
+    cartModal.classList.remove('hidden');
+}
+
+function closeCartModal() {
+    document.getElementById('cart-modal').classList.add('hidden');
+}
+
+function handleCartSubmit(e) {
+    e.preventDefault();
+
+    cartBillingData = {
+        name: document.getElementById('cart-name').value.trim(),
+        mobile: document.getElementById('cart-mobile').value.trim(),
+        email: document.getElementById('cart-email').value.trim().toLowerCase(),
+        address: document.getElementById('cart-address').value.trim(),
+        state: document.getElementById('cart-state').value.trim(),
+        country: document.getElementById('cart-country').value,
+        pincode: document.getElementById('cart-pincode').value.trim()
+    };
+
+    closeCartModal();
+    showUtrModal();
 }
 
 function switchAuthTab(mode) {
@@ -273,70 +344,17 @@ async function handleForgotPassword(e) {
     }
 }
 
-function openCartModal(e) {
-    if(e) e.preventDefault();
-    const cartModal = document.getElementById('cart-modal');
-    if (currentUser) {
-        document.getElementById('cart-name').value = currentUser.name || '';
-        document.getElementById('cart-email').value = currentUser.email || '';
-        if (currentUser.mobile) document.getElementById('cart-mobile').value = currentUser.mobile;
-    }
-    cartModal.classList.remove('hidden');
-}
-
-function closeCartModal() {
-    document.getElementById('cart-modal').classList.add('hidden');
-}
-
-function handleCartSubmit(e) {
-    e.preventDefault();
-
-    cartBillingData = {
-        name: document.getElementById('cart-name').value.trim(),
-        mobile: document.getElementById('cart-mobile').value.trim(),
-        email: document.getElementById('cart-email').value.trim().toLowerCase(),
-        address: document.getElementById('cart-address').value.trim(),
-        state: document.getElementById('cart-state').value.trim(),
-        country: document.getElementById('cart-country').value,
-        pincode: document.getElementById('cart-pincode').value.trim()
-    };
-
-    closeCartModal();
-    initiatePayment();
-}
-
-function initiatePayment() {
-    const btn = document.getElementById('pay-btn');
-    const qrBtn = document.getElementById('qr-paid-btn'); 
-    const msg = document.getElementById('countdown-msg');
-    const timerEl = document.getElementById('timer');
-    
-    btn.classList.add('opacity-50', 'pointer-events-none');
-    if (qrBtn) qrBtn.classList.add('opacity-50', 'pointer-events-none'); 
-    msg.classList.remove('hidden');
-    
-    let timeLeft = 10; 
-    timerEl.innerText = timeLeft;
-
-    clearInterval(countdownInterval);
-    countdownInterval = setInterval(() => {
-        timeLeft--;
-        timerEl.innerText = timeLeft;
-        if (timeLeft <= 0) {
-            clearInterval(countdownInterval);
-            showUtrModal();
-            resetPaymentUI();
-        }
-    }, 1000);
-
-    window.open('upi://pay?pa=9959246246@ybl&pn=ShaikRaheem&cu=INR&am=499', '_blank');
-}
-
+/* Requirement 4: UTR Submission with 45-Second Loading & Verification Check */
 async function submitUTR() {
     const utrInput = document.getElementById('utr-input').value.trim();
     const errorMsg = document.getElementById('utr-error');
+    const formContainer = document.getElementById('utr-form-container');
+    const loadingContainer = document.getElementById('utr-loading-container');
+    const congratsContainer = document.getElementById('congratulations-container');
+    const progressBar = document.getElementById('utr-progress-bar');
     
     if (utrInput.length < 8) {
+        errorMsg.innerText = "Please enter a valid UTR reference number.";
         errorMsg.classList.remove('hidden');
         return;
     }
@@ -344,6 +362,18 @@ async function submitUTR() {
 
     const activeEmail = cartBillingData ? cartBillingData.email : (currentUser ? currentUser.email : '');
     if (!activeEmail) return;
+
+    // Show 45-second verification loader UI
+    formContainer.classList.add('hidden');
+    loadingContainer.classList.remove('hidden');
+    progressBar.style.width = '0%';
+    
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += 2.2;
+        if (progress > 98) progress = 98;
+        progressBar.style.width = progress + '%';
+    }, 1000);
 
     const formData = new URLSearchParams();
     formData.append('action', 'submit_utr');
@@ -362,30 +392,35 @@ async function submitUTR() {
     try {
         const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
         const data = await response.json();
+        
+        clearInterval(progressInterval);
+        progressBar.style.width = '100%';
 
         if (data.success) {
+            // Requirement 4: Success - Send invoice (handled in GS), unlock course, show Congratulations popup
             isPremiumUser = true;
-            
-            document.getElementById('utr-modal-content').innerHTML = `
-                <div class="text-center py-6">
-                    <i class="fa-solid fa-circle-check text-6xl text-emerald-500 mb-4 animate-bounce"></i>
-                    <h2 class="text-2xl font-bold text-white mb-2">Payment Verified!</h2>
-                    <p class="text-slate-400 mb-4">కోర్సు అన్‌లాక్ చేయబడింది. Content Unlocked!</p>
-                    <p class="text-xs text-emerald-400 bg-emerald-500/10 p-2 rounded border border-emerald-500/30">
-                        <i class="fa-solid fa-envelope mr-1"></i> Invoice PDF has been sent to your Gmail ID.
-                    </p>
-                </div>
-            `;
+            loadingContainer.classList.add('hidden');
+            congratsContainer.classList.remove('hidden');
 
             setTimeout(() => {
                 closeModal();
                 updateUIState();
                 renderPlaylist();
                 loadVideo(currentVideoIndex);
-            }, 3000);
+            }, 4000);
+        } else {
+            // Requirement 4: Failure - Show "Submit Valid UTR" and do not send invoice / unlock
+            loadingContainer.classList.add('hidden');
+            formContainer.classList.remove('hidden');
+            errorMsg.innerText = data.message || "Submit Valid UTR";
+            errorMsg.classList.remove('hidden');
         }
     } catch (err) {
-        console.error("UTR submission failed", err);
+        clearInterval(progressInterval);
+        loadingContainer.classList.add('hidden');
+        formContainer.classList.remove('hidden');
+        errorMsg.innerText = "Submit Valid UTR";
+        errorMsg.classList.remove('hidden');
     }
 }
 
@@ -420,7 +455,6 @@ function loadVideo(index) {
     document.getElementById('video-desc').innerText = video.desc;
     const iframe = document.getElementById('video-frame');
     const overlay = document.getElementById('locked-overlay');
-    resetPaymentUI(); 
 
     if (video.isLocked && !isPremiumUser) {
         iframe.classList.add('hidden');
@@ -439,17 +473,17 @@ function loadVideo(index) {
     }
 }
 
-function resetPaymentUI() {
-    clearInterval(countdownInterval);
-    document.getElementById('pay-btn').classList.remove('opacity-50', 'pointer-events-none');
-    const qrBtn = document.getElementById('qr-paid-btn'); 
-    if (qrBtn) qrBtn.classList.remove('opacity-50', 'pointer-events-none'); 
-    document.getElementById('countdown-msg').classList.add('hidden');
-}
-
 function showUtrModal() {
     const modal = document.getElementById('utr-modal');
     const content = document.getElementById('utr-modal-content');
+    
+    // Reset UTR UI State
+    document.getElementById('utr-form-container').classList.remove('hidden');
+    document.getElementById('utr-loading-container').classList.add('hidden');
+    document.getElementById('congratulations-container').classList.add('hidden');
+    document.getElementById('utr-error').classList.add('hidden');
+    document.getElementById('utr-input').value = '';
+
     modal.classList.remove('hidden');
     setTimeout(() => {
         modal.classList.remove('opacity-0');
@@ -464,8 +498,6 @@ function closeModal() {
     content.classList.add('scale-95');
     setTimeout(() => {
         modal.classList.add('hidden');
-        document.getElementById('utr-input').value = '';
-        document.getElementById('utr-error').classList.add('hidden');
     }, 300); 
 }
 
