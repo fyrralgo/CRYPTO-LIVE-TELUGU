@@ -12,9 +12,9 @@ const videos = [
     { title: "Class_3. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/bJaAY_IInsA?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "32:05" },
     { title: "Class_4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "55:40" },
     { title: "Class_5. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "15:20" },
-    { title: "Class_6. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?rel=0&modestbranding=1&iv_load_policy=3", isLocked: false, duration: "45:10" },
+    { title: "Class_6. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "45:10" },
     { title: "Class_7. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/bJaAY_IInsA?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "32:05" },
-    { title: "Class_8. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "55:40" }
+    { title: "Class_8. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ যত্ন", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "55:40" }
 ];
 
 async function init() {
@@ -72,19 +72,28 @@ function showAuthModal(showNotice = false) {
     document.getElementById('auth-modal').classList.remove('hidden');
 }
 
-/* Requirement 2 & 3: Lock Click Handler */
+/* Fix added: Verify login status before proceeding to Cart page */
+function handlePayWithQRClick() {
+    if (!currentUser) {
+        // If user is not logged in, force auth modal with notice
+        showAuthModal(true);
+    } else {
+        // If logged in, open the cart details page
+        openCartModal();
+    }
+}
+
+/* Original amount lock fallback */
 function handleUnlockClick() {
     if (!currentUser) {
         showAuthModal(true);
         return;
     }
-
     document.getElementById('amount-digit-input').value = '';
     validateAmountDigitInput();
     document.getElementById('amount-modal').classList.remove('hidden');
 }
 
-/* Requirement 3: Digit Matching Validation */
 function validateAmountDigitInput() {
     const inputVal = document.getElementById('amount-digit-input').value.trim();
     const nextBtn = document.getElementById('amount-next-btn');
@@ -119,6 +128,22 @@ function openCartModal() {
 
 function closeCartModal() {
     document.getElementById('cart-modal').classList.add('hidden');
+}
+
+/* Feature added: Function to handle QR Image Download & Alert Popup */
+function downloadQR() {
+    // Dynamically create anchor link to trigger download
+    const link = document.createElement('a');
+    link.href = '1qr.png';
+    link.download = 'QR_Payment.png';
+    
+    // Append, click, and remove
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Show popup notice after interaction
+    alert("QR Code Downloaded in your Galary Please upload or Scan With Your UPI Payment APP");
 }
 
 function handleCartSubmit(e) {
