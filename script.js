@@ -344,7 +344,7 @@ async function handleForgotPassword(e) {
     }
 }
 
-/* Requirement 4: UTR Submission with 45-Second Loading & Verification Check */
+/* Requirement 4: UTR Submission with 90-Second Loading & Verification Check */
 async function submitUTR() {
     const utrInput = document.getElementById('utr-input').value.trim();
     const errorMsg = document.getElementById('utr-error');
@@ -363,7 +363,7 @@ async function submitUTR() {
     const activeEmail = cartBillingData ? cartBillingData.email : (currentUser ? currentUser.email : '');
     if (!activeEmail) return;
 
-    // Show 45-second verification loader UI
+    // Show 90-second verification loader UI
     formContainer.classList.add('hidden');
     loadingContainer.classList.remove('hidden');
     progressBar.style.width = '0%';
