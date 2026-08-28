@@ -8,13 +8,13 @@ let authTimer = null;
 
 const videos = [
     { title: "Class_1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: false, duration: "15:20" },
-    { title: "2. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?rel=0&modestbranding=1&iv_load_policy=3", isLocked: false, duration: "45:10" },
-    { title: "3. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/bJaAY_IInsA?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "32:05" },
-    { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "55:40" },
-    { title: "Class_1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: false, duration: "15:20" },
-    { title: "2. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?rel=0&modestbranding=1&iv_load_policy=3", isLocked: false, duration: "45:10" },
-    { title: "3. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/bJaAY_IInsA?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "32:05" },
-    { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "55:40" }
+    { title: "Class_2. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "45:10" },
+    { title: "Class_3. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/bJaAY_IInsA?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "32:05" },
+    { title: "Class_4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "55:40" },
+    { title: "Class_5. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "15:20" },
+    { title: "Class_6. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?rel=0&modestbranding=1&iv_load_policy=3", isLocked: false, duration: "45:10" },
+    { title: "Class_7. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/bJaAY_IInsA?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "32:05" },
+    { title: "Class_8. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "55:40" }
 ];
 
 async function init() {
