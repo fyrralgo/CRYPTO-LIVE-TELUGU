@@ -7,14 +7,14 @@ let cartBillingData = null;
 let authTimer = null;
 
 const videos = [
-    { title: "Class_1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/33gUzpo_-sc?si=27R5lHJ_NEyrI43P", isLocked: false, duration: "15:20" },
-    { title: "2. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?si=liVTSIfcJLX4Dsq2", isLocked: false, duration: "45:10" },
-    { title: "3. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/bJaAY_IInsA?si=HlcYInvMYo6mUdxT", isLocked: true, duration: "32:05" },
-    { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://youtu.be/33gUzpo_-sc?si=gWoENjj3bvj50zar", isLocked: true, duration: "55:40" },
-{ title: "Class_1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/33gUzpo_-sc?si=27R5lHJ_NEyrI43P", isLocked: false, duration: "15:20" },
-    { title: "2. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?si=liVTSIfcJLX4Dsq2", isLocked: false, duration: "45:10" },
-    { title: "3. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/bJaAY_IInsA?si=HlcYInvMYo6mUdxT", isLocked: true, duration: "32:05" },
-    { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://youtu.be/33gUzpo_-sc?si=gWoENjj3bvj50zar", isLocked: true, duration: "55:40" }
+    { title: "Class_1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: false, duration: "15:20" },
+    { title: "2. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?rel=0&modestbranding=1&iv_load_policy=3", isLocked: false, duration: "45:10" },
+    { title: "3. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/bJaAY_IInsA?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "32:05" },
+    { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "55:40" },
+    { title: "Class_1. Introduction to Crypto & Forex (Basics)", desc: "క్రిప్టో మరియు ఫారెక్స్ ట్రేడింగ్ అంటే ఏమిటి? బేసిక్స్ నేర్చుకోండి.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: false, duration: "15:20" },
+    { title: "2. Technical Analysis & Chart Patterns", desc: "టెక్నికల్ అనాలిసిస్ మరియు చార్ట్ ప్యాటర్న్స్ ద్వారా మార్కెట్ ట్రెండ్స్ ఎలా గుర్తించాలి.", url: "https://www.youtube.com/embed/JgV8ayiVs6s?rel=0&modestbranding=1&iv_load_policy=3", isLocked: false, duration: "45:10" },
+    { title: "3. Risk Management & Psychology", desc: "రిస్క్ మేనేజ్‌మెంట్ ఎందుకు ముఖ్యం? ట్రేడింగ్ సైకాలజీ ఎలా ఉండాలి?", url: "https://www.youtube.com/embed/bJaAY_IInsA?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "32:05" },
+    { title: "4. Live Trading Setup & Strategies", desc: "లైవ్ ట్రేడింగ్ స్ట్రాటజీస్ మరియు నా సీక్రెట్ సెటప్.", url: "https://www.youtube.com/embed/33gUzpo_-sc?rel=0&modestbranding=1&iv_load_policy=3", isLocked: true, duration: "55:40" }
 ];
 
 async function init() {
@@ -74,13 +74,11 @@ function showAuthModal(showNotice = false) {
 
 /* Requirement 2 & 3: Lock Click Handler */
 function handleUnlockClick() {
-    // Requirement 2: Check if user is logged in/registered first
     if (!currentUser) {
         showAuthModal(true);
         return;
     }
 
-    // Requirement 3: If logged in, open the Digit Input Popup first
     document.getElementById('amount-digit-input').value = '';
     validateAmountDigitInput();
     document.getElementById('amount-modal').classList.remove('hidden');
@@ -91,7 +89,6 @@ function validateAmountDigitInput() {
     const inputVal = document.getElementById('amount-digit-input').value.trim();
     const nextBtn = document.getElementById('amount-next-btn');
 
-    // Strict validation for exact digit match: "INR 1.00"
     if (inputVal === 'INR 1.00') {
         nextBtn.disabled = false;
         nextBtn.className = "flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition text-sm shadow-lg shadow-emerald-500/30 cursor-pointer";
@@ -367,7 +364,6 @@ async function submitUTR() {
     const activeEmail = cartBillingData ? cartBillingData.email : (currentUser ? currentUser.email : '');
     if (!activeEmail) return;
 
-    // Show 90-second verification loader UI
     formContainer.classList.add('hidden');
     loadingContainer.classList.remove('hidden');
     progressBar.style.width = '0%';
@@ -401,7 +397,6 @@ async function submitUTR() {
         progressBar.style.width = '100%';
 
         if (data.success) {
-            // Requirement 4: Success - Send invoice (handled in GS), unlock course, show Congratulations popup
             isPremiumUser = true;
             loadingContainer.classList.add('hidden');
             congratsContainer.classList.remove('hidden');
@@ -413,7 +408,6 @@ async function submitUTR() {
                 loadVideo(currentVideoIndex);
             }, 4000);
         } else {
-            // Requirement 4: Failure - Show "Submit Valid UTR" and do not send invoice / unlock
             loadingContainer.classList.add('hidden');
             formContainer.classList.remove('hidden');
             errorMsg.innerText = data.message || "Submit Valid UTR";
@@ -481,7 +475,6 @@ function showUtrModal() {
     const modal = document.getElementById('utr-modal');
     const content = document.getElementById('utr-modal-content');
     
-    // Reset UTR UI State
     document.getElementById('utr-form-container').classList.remove('hidden');
     document.getElementById('utr-loading-container').classList.add('hidden');
     document.getElementById('congratulations-container').classList.add('hidden');
