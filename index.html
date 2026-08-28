@@ -289,34 +289,6 @@
         <i class="fa-brands fa-whatsapp"></i>
     </a>
 
-    <!-- Embedded full script logic for openScanner function from test2 -->
-    <script>
-    function openScanner(appName) {
-      let targetUrl = "";
-
-      switch (appName) {
-        case 'paytm':
-          targetUrl = "https://play.google.com/store/apps/details?id=net.one97.paytm&pcampaignid=web_share";
-          break;
-
-        case 'phonepe':
-          targetUrl = "https://play.google.com/store/apps/details?id=com.phonepe.app&pcampaignid=web_share";
-          break;
-
-        case 'gpay':
-          targetUrl = "https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user&pcampaignid=web_share";
-          break;
-
-        case 'generic':
-          targetUrl = "upi://pay";
-          break;
-      }
-
-      if (targetUrl) {
-        window.location.href = targetUrl;
-      }
-    }
-    </script>
     <script src="script.js"></script>
 </body>
 </html>
