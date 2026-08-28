@@ -52,6 +52,7 @@
                     </p>
                     
                     <div class="bg-slate-800 p-2.5 md:p-5 rounded-xl border border-slate-700 w-full max-w-sm mx-auto shadow-xl">
+                        <!-- Fix applied: Modified onclick to call the JS verification function -->
                         <button id="qr-paid-btn" type="button" onclick="handlePayWithQRClick()"
                            class="block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition text-center shadow-lg shadow-emerald-500/30 text-xs md:text-base">
                             <i class="fa-solid fa-qrcode mr-2"></i> Pay with QR Code
@@ -80,29 +81,30 @@
         <div class="bg-slate-800 p-6 md:p-8 rounded-2xl border border-slate-700 w-full max-w-md shadow-2xl my-auto">
             <h2 class="text-xl font-bold text-white mb-3 border-b border-slate-700 pb-2"><i class="fa-solid fa-qrcode mr-2 text-emerald-400"></i> Scan QR & Enter Details</h2>
             
-            <!-- QR Display Section & App Links -->
-            <div class="mb-4 flex flex-row items-center justify-between bg-white p-3 rounded-xl shadow-inner gap-4">
-                
-                <!-- Left Side: QR Code & Download Button -->
-                <div class="flex flex-col items-center w-1/2">
-                    <p class="text-[10px] sm:text-xs text-slate-800 mb-1 font-bold text-center">Scan QR to Pay</p>
-                    <img src="1qr.png" alt="Payment QR Code" class="w-28 h-28 object-contain rounded border border-slate-200 mb-2">
-                    <button type="button" onclick="downloadQR()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-2 rounded-lg transition shadow-md text-[10px] sm:text-xs flex items-center justify-center gap-1 w-full text-center">
-                        <i class="fa-solid fa-download"></i> Download QR
+            <!-- QR Display Section -->
+            <div class="mb-4 flex flex-col items-center bg-white p-3 rounded-xl shadow-inner gap-2">
+                <p class="text-xs text-slate-800 mb-1 font-bold text-center">Scan QR Code to Pay Course Fee</p>
+                <img src="1qr.png" alt="Payment QR Code" class="w-40 h-40 object-contain rounded border border-slate-200 mb-1">
+                <!-- Feature added: Download QR Button -->
+                <button type="button" onclick="downloadQR()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-md text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-download"></i> Download QR & Pay
+                </button>
+
+                <!-- Replaced "Open UPI Scanner" button with 2x2 grid of 4 UPI buttons[cite: 4] -->
+                <div class="grid grid-cols-2 gap-2 w-full mt-1">
+                    <button type="button" onclick="openScanner('paytm')" class="bg-[#002970] hover:opacity-90 text-white font-bold py-2 px-2 rounded-lg transition shadow-md text-xs flex items-center justify-center">
+                        Paytm
+                    </button>
+                    <button type="button" onclick="openScanner('phonepe')" class="bg-[#5f259f] hover:opacity-90 text-white font-bold py-2 px-2 rounded-lg transition shadow-md text-xs flex items-center justify-center">
+                        PhonePe
+                    </button>
+                    <button type="button" onclick="openScanner('gpay')" class="bg-[#ea4335] hover:opacity-90 text-white font-bold py-2 px-2 rounded-lg transition shadow-md text-xs flex items-center justify-center">
+                        Google Pay
+                    </button>
+                    <button type="button" onclick="openScanner('generic')" class="bg-[#28a745] hover:opacity-90 text-white font-bold py-2 px-2 rounded-lg transition shadow-md text-xs flex items-center justify-center">
+                        Other UPI
                     </button>
                 </div>
-
-                <!-- Right Side: 4 Payment Buttons -->
-                <div class="flex flex-col items-center w-1/2">
-                    <p class="text-[10px] sm:text-xs text-slate-800 mb-2 font-bold text-center">Open App Store / UPI</p>
-                    <div class="grid grid-cols-2 gap-2 w-full">
-                        <button type="button" class="w-full px-1 py-3 text-white text-center rounded-md text-[10px] sm:text-xs font-bold shadow-md active:scale-95 transition-transform bg-[#002970]" onclick="openScanner('paytm')">Paytm</button>
-                        <button type="button" class="w-full px-1 py-3 text-white text-center rounded-md text-[10px] sm:text-xs font-bold shadow-md active:scale-95 transition-transform bg-[#5f259f]" onclick="openScanner('phonepe')">PhonePe</button>
-                        <button type="button" class="w-full px-1 py-3 text-white text-center rounded-md text-[10px] sm:text-xs font-bold shadow-md active:scale-95 transition-transform bg-[#ea4335]" onclick="openScanner('gpay')">GPay</button>
-                        <button type="button" class="w-full px-1 py-3 text-white text-center rounded-md text-[10px] sm:text-xs font-bold shadow-md active:scale-95 transition-transform bg-[#28a745]" onclick="openScanner('generic')">Other</button>
-                    </div>
-                </div>
-
             </div>
 
             <p class="text-xs text-slate-400 mb-3">Fill in details below after scanning and making payment:</p>
@@ -287,34 +289,34 @@
         <i class="fa-brands fa-whatsapp"></i>
     </a>
 
-    <script src="script.js"></script>
-
+    <!-- Embedded full script logic for openScanner function from test2 -->
     <script>
-      function openScanner(appName) {
-        let targetUrl = "";
+    function openScanner(appName) {
+      let targetUrl = "";
 
-        switch (appName) {
-          case 'paytm':
-            targetUrl = "https://play.google.com/store/apps/details?id=net.one97.paytm&pcampaignid=web_share";
-            break;
+      switch (appName) {
+        case 'paytm':
+          targetUrl = "https://play.google.com/store/apps/details?id=net.one97.paytm&pcampaignid=web_share";
+          break;
 
-          case 'phonepe':
-            targetUrl = "https://play.google.com/store/apps/details?id=com.phonepe.app&pcampaignid=web_share";
-            break;
+        case 'phonepe':
+          targetUrl = "https://play.google.com/store/apps/details?id=com.phonepe.app&pcampaignid=web_share";
+          break;
 
-          case 'gpay':
-            targetUrl = "https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user&pcampaignid=web_share";
-            break;
+        case 'gpay':
+          targetUrl = "https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user&pcampaignid=web_share";
+          break;
 
-          case 'generic':
-            targetUrl = "upi://pay";
-            break;
-        }
-
-        if (targetUrl) {
-          window.location.href = targetUrl;
-        }
+        case 'generic':
+          targetUrl = "upi://pay";
+          break;
       }
+
+      if (targetUrl) {
+        window.location.href = targetUrl;
+      }
+    }
     </script>
+    <script src="script.js"></script>
 </body>
 </html>
