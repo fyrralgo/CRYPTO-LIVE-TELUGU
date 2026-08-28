@@ -89,10 +89,22 @@
                 <button type="button" onclick="downloadQR()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-md text-sm flex items-center justify-center gap-2">
                     <i class="fa-solid fa-download"></i> Download QR & Pay
                 </button>
-                <!-- Feature added: Open UPI Scanner Button (from test2) -->
-                <button type="button" onclick="openScanner('generic')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-md text-sm flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-expand"></i> Open UPI Scanner
-                </button>
+
+                <!-- Replaced "Open UPI Scanner" button with 2x2 grid of 4 UPI buttons[cite: 4] -->
+                <div class="grid grid-cols-2 gap-2 w-full mt-1">
+                    <button type="button" onclick="openScanner('paytm')" class="bg-[#002970] hover:opacity-90 text-white font-bold py-2 px-2 rounded-lg transition shadow-md text-xs flex items-center justify-center">
+                        Paytm
+                    </button>
+                    <button type="button" onclick="openScanner('phonepe')" class="bg-[#5f259f] hover:opacity-90 text-white font-bold py-2 px-2 rounded-lg transition shadow-md text-xs flex items-center justify-center">
+                        PhonePe
+                    </button>
+                    <button type="button" onclick="openScanner('gpay')" class="bg-[#ea4335] hover:opacity-90 text-white font-bold py-2 px-2 rounded-lg transition shadow-md text-xs flex items-center justify-center">
+                        Google Pay
+                    </button>
+                    <button type="button" onclick="openScanner('generic')" class="bg-[#28a745] hover:opacity-90 text-white font-bold py-2 px-2 rounded-lg transition shadow-md text-xs flex items-center justify-center">
+                        Other UPI
+                    </button>
+                </div>
             </div>
 
             <p class="text-xs text-slate-400 mb-3">Fill in details below after scanning and making payment:</p>
@@ -277,21 +289,33 @@
         <i class="fa-brands fa-whatsapp"></i>
     </a>
 
-    <!-- Embedded script for openScanner function from test2 -->
+    <!-- Embedded full script logic for openScanner function from test2 -->
     <script>
-      function openScanner(appName) {
-        let targetUrl = "";
+    function openScanner(appName) {
+      let targetUrl = "";
 
-        switch (appName) {
-          case 'generic':
-            targetUrl = "upi://pay";
-            break;
-        }
+      switch (appName) {
+        case 'paytm':
+          targetUrl = "https://play.google.com/store/apps/details?id=net.one97.paytm&pcampaignid=web_share";
+          break;
 
-        if (targetUrl) {
-          window.location.href = targetUrl;
-        }
+        case 'phonepe':
+          targetUrl = "https://play.google.com/store/apps/details?id=com.phonepe.app&pcampaignid=web_share";
+          break;
+
+        case 'gpay':
+          targetUrl = "https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user&pcampaignid=web_share";
+          break;
+
+        case 'generic':
+          targetUrl = "upi://pay";
+          break;
       }
+
+      if (targetUrl) {
+        window.location.href = targetUrl;
+      }
+    }
     </script>
     <script src="script.js"></script>
 </body>
